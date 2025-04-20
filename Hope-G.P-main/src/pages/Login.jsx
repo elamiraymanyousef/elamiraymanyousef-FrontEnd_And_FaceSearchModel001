@@ -52,6 +52,7 @@ function Login() {
   const [Form, setForm] = useState({
     email: "",
     password: "",
+    rememberMe: true
   });
   const [changePass, setChangePass] = useState(false);
   const isOpen = () => {
@@ -85,90 +86,131 @@ function Login() {
   //to send token to home page
 
   // const [city, setCity] = useState("");
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-    setmsg(false);
-    seterrInppass(false);
-    seterrInpemail(false);
-    try {
-      await axios
-        .post(`${LoginApi}`, Form, {
-          headers: {
-            "Content-Type": "application/json",
-            "Accept-Language": "ar-EG",
-          },
-        })
-        .then((response) => {
-          console.log("response", response);
-          if (response.data.isSuccess) {
-            setmsg(true);
-            console.log("object");
+  // const handleSubmit = async (event) => {
+  //   event.preventDefault();
+  //   setmsg(false);
+  //   seterrInppass(false);
+  //   seterrInpemail(false);
+  //   try {
+  //     await axios
+  //       .post(`${LoginApi}`, Form, {
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //           "Accept-Language": "ar-EG",
+  //         },
+  //       })
+  //       .then((response) => {
+  //         console.log("response", response);
+  //         const res = response.data;
+  //         if (res.succeeded) {
+  //           setmsg(true);
+  //           setMsgforsuccess(false);
+  //           setsuccesOrFAIL("تم التسجيل بنجاح");
+  //           const token = res.data.token;
+  //           // console.log(response.data.data.token);
+  //           const userId = res.data.userId; // Capture userId value
+  //           localStorage.setItem("userId", userId);
 
-            setMsgforsuccess(false);
-            setsuccesOrFAIL("تم التسجيل بنجاح");
-            const token = response.data.data.token;
-            // console.log(response.data.data.token);
-            const city = response.data.data.city; // Capture city value
-            localStorage.setItem("city", city);
+  //           cookies.set("Cookie", token);
+  //           // Redirect to home page with token
+  //           // navigate("/home", { state: { token } });
 
-            cookies.set("Cookie", token);
-            const role = response.data.data.roles;
-            // Check if the role is "Admin"
-            if (role.includes("Admin")) {
-              sessionStorage.setItem("role", "Admin");
-              // Navigate to admin dashboard page
+  //           setErrForImg(true);
+  //           // setInterval(() => {
+  //           //   window.location.pathname = "/HomePage";
+  //           // }, 1000);
+  //         } else {
+  //           setmsg(true);
+  //           if (response.data.data == null) {
+  //             setsuccesOrFAIL(response.data.message);
+  //           } else if (Form.email == "" && Form.password == "") {
+  //             setsuccesOrFAIL(response.data.data[0] + response.data.data[1]);
+  //             seterrInppass(true);
+  //             seterrInpemail(true);
+  //           } else if (Form.email == "" && Form.password !== "") {
+  //             setsuccesOrFAIL(response.data.data[0]);
+  //             seterrInpemail(true);
+  //           } else if (Form.password == "" && Form.email !== "") {
+  //             setsuccesOrFAIL(response.data.data[0]);
+  //             seterrInppass(true);
+  //           }
 
-              setInterval(() => {
-                window.location.pathname = "/adminDashboard";
-              }, 1000);
-              // Replace the current URL so the user cannot go back
-              window.history.replaceState(null, "", "/adminDashboard");
-            } else if (role.includes("User")) {
-              sessionStorage.setItem("role", "User");
-              // Navigate to home page
-              setInterval(() => {
-                window.location.pathname = "/HomePage";
-              }, 1000);
+  //           setMsgforsuccess(false);
+  //         }
+  //       });
+  //   } catch (err) {
+  //     console.log(err);
 
-              // Replace the current URL so the user cannot go back
-              window.history.replaceState(null, "", "/HomePage");
-            }
-            // Redirect to home page with token
-            // navigate("/home", { state: { token } });
+  //     if (response.data.data == null) {
+  //       console.log("helll");
+  //       setsuccesOrFAIL(response.data.message);
+  //     }
+  //     setsuccesOrFAIL("حدث خطا خارجي");
+  //   }
+  // };
+  const navigate = useNavigate();
 
-            setErrForImg(true);
-            // setInterval(() => {
-            //   window.location.pathname = "/HomePage";
-            // }, 1000);
-          } else {
-            setmsg(true);
-            if (response.data.data == null) {
-              setsuccesOrFAIL(response.data.message);
-            } else if (Form.email == "" && Form.password == "") {
-              setsuccesOrFAIL(response.data.data[0] + response.data.data[1]);
-              seterrInppass(true);
-              seterrInpemail(true);
-            } else if (Form.email == "" && Form.password !== "") {
-              setsuccesOrFAIL(response.data.data[0]);
-              seterrInpemail(true);
-            } else if (Form.password == "" && Form.email !== "") {
-              setsuccesOrFAIL(response.data.data[0]);
-              seterrInppass(true);
-            }
+const handleSubmit = async (event) => {
+  event.preventDefault();
+  setmsg(false);
+  seterrInppass(false);
+  seterrInpemail(false);
 
-            setMsgforsuccess(false);
-          }
-        });
-    } catch (err) {
-      console.log(err);
+  try {
+    const response = await axios.post(`${LoginApi}`, Form, {
+      headers: {
+        "Content-Type": "application/json",
+        "Accept-Language": "ar-EG",
+      },
+    });
 
-      if (response.data.data == null) {
-        console.log("helll");
-        setsuccesOrFAIL(response.data.message);
+    const res = response.data;
+
+    if (res.succeeded) {
+      setmsg(true);
+      setMsgforsuccess(false);
+      setsuccesOrFAIL("تم تسجيل الدخول بنجاح");
+
+      const token = res.data.token;
+      const userId = res.data.userId;
+
+      localStorage.setItem("userId", userId);
+      cookies.set("Cookie", token);
+
+      setErrForImg(true);
+
+      // ✅ Redirect to homepage
+      navigate("/HomePage");
+    } else {
+      setmsg(true);
+      setMsgforsuccess(false);
+
+      if (!Form.email && !Form.password) {
+        setsuccesOrFAIL(res.message || "ادخل البريد وكلمة المرور");
+        seterrInpemail(true);
+        seterrInppass(true);
+      } else if (!Form.email) {
+        setsuccesOrFAIL("ادخل البريد الإلكتروني");
+        seterrInpemail(true);
+      } else if (!Form.password) {
+        setsuccesOrFAIL("ادخل كلمة المرور");
+        seterrInppass(true);
+      } else {
+        setsuccesOrFAIL(res.message || "فشل تسجيل الدخول");
       }
-      setsuccesOrFAIL("حدث خطا خارجي");
     }
-  };
+  } catch (err) {
+    console.log(err);
+    setmsg(true);
+
+    if (err.response?.data?.message) {
+      setsuccesOrFAIL(err.response.data.message);
+    } else {
+      setsuccesOrFAIL("حدث خطأ غير متوقع");
+    }
+  }
+};
+
   const [stopAnim, setstopAnim] = useState(false);
   useEffect(() => {
     setstopAnim(true);
@@ -521,9 +563,19 @@ function Login() {
 
               <FormControlLabel
                 sx={{ marginTop: { md: "0px" }, marginBottom: { md: "-25px" } }}
-                control={<Checkbox value="remember" color="primary" />}
+                control={
+                  <Checkbox
+                    name="rememberMe"
+                    checked={Form.rememberMe}
+                    onChange={(e) =>
+                      setForm({ ...Form, rememberMe: e.target.checked })
+                    }
+                    color="primary"
+                  />
+                }
                 label="تذكرنى"
               />
+
 
               <Box
                 // transition={{duration:.5}}

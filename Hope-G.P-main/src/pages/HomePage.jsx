@@ -38,7 +38,7 @@ function HomePage() {
   // Function to navigate to user profile
   const navigateToUserProfile = (userId) => {
     // Navigate to the user profile page with userId parameter
-    history.push(`/profile/${userId}`);
+    history.push(`/profile/${userId}`); 
   };
   //fetch all data state
   const [apiAllData, setApiAllData] = useState([]);

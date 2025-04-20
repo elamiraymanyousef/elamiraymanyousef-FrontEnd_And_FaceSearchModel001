@@ -1,10 +1,10 @@
 export const LoginApi =
-  "https://hope3221-001-site1.btempurl.com/api/Account/Login";
+  "http://hopesystem.runasp.net/api/Account/login";
 export const RegesterApi =
-  "https://hope3221-001-site1.btempurl.com/api/Account/UserRegister";
+  "http://hopesystem.runasp.net/api/Account/register";
 
 export const SendEmail =
-  "https://hope3221-001-site1.btempurl.com/api/Account/SendVerfingEmailCode";
+  "http://hopesystem.runasp.net/api/Account/confirm-email";
 
 export const ChangePasswordApi =
   "https://hope3221-001-site1.btempurl.com/api/Account/SendCodeForChangePassword";
@@ -96,3 +96,5 @@ export const GetPostsByUserId =
   "https://hope3221-001-site1.btempurl.com/api/Account/GetPostsByUserId";
 export const GetPinnedPostsByUserId =
   "https://hope3221-001-site1.btempurl.com/api/Account/GetPinnedPostsByUserId";
+export const getAllGovernments =
+"http://hopesystem.runasp.net/api/Lookup/governments";

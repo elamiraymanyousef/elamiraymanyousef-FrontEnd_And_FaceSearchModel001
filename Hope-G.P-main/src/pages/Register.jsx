@@ -34,7 +34,7 @@ import city from "../assets/government.png";
 import fingerprint from "../assets/Fingerprint.png";
 import phone from "../assets/Phone.png";
 import { NavLink } from "react-router-dom";
-import { RegesterApi, getAllCities } from "../apiRequests/apiRequest";
+import { RegesterApi, getAllGovernments } from "../apiRequests/apiRequest";
 import Loading from "../components/home-page-components/Loading";
 import axios from "axios";
 
@@ -47,20 +47,34 @@ import { useNav } from "../context/EmailContext";
 
 function Register() {
   const { Nav, handlNav } = useNav();
-  console.log(Nav);
   const [getCity, setGetCity] = useState([]);
   const [ErrForImg, setErrForImg] = useState(false);
+  const [userId, setUserId] = useState("");
+ 
 
   useEffect(() => {
-    axios.get(`${getAllCities}`, {}).then((response) => {
-      setGetCity(response.data.data);
+    let isMounted = true;
+  
+    axios.get(getAllGovernments).then((response) => {
+      if (isMounted) {
+        setGetCity(response.data);
+      }
     });
+  
+    return () => {
+      isMounted = false;
+    };
   }, []);
+  
+
+  const [showVerifyPopup, setShowVerifyPopup] = useState(false);
+
   const [realEmail, setrealEmail] = useState("");
   const compareEmail = (email) => {
-    console.log("email", email);
     setrealEmail(email);
   };
+
+
   const [userData, setUserData] = useState({
     UserName: "",
     DisplayName: "",
@@ -70,7 +84,6 @@ function Register() {
     Password: "",
     ConfirmPassword: "",
   });
-  console.log(userData);
   const [err, setErr] = useState(false);
   const [MatchPassword, setMatchPassword] = useState("");
   const [succesOrFAIL, setsuccesOrFAIL] = useState("");
@@ -95,7 +108,6 @@ function Register() {
     event.preventDefault();
   };
 
-  console.log("realemail", realEmail);
   const handleInputChange = (e) => {
     setUserData({ ...userData, [e.target.name]: e.target.value });
     const { name, value, type, checked } = e.target;
@@ -104,128 +116,96 @@ function Register() {
       [name]: type === "checkbox" ? checked : value,
     }));
   };
-  console.log(userData.Password);
   const handleRegisterSubmit = async (e) => {
     e.preventDefault();
     setmsg(false);
     setMsgforsuccess(true);
-    if (userData.Password !== userData.ConfirmPassword) {
-      setMatchPassword("Passwords do not match.");
-    }
-    // Validate form data (you can add your validation logic here)
-    // Check if passwords match
-    if (userData.Password !== userData.ConfirmPassword) {
-      console.log("Passwords do not match.");
+  
+    if (
+      !userData.UserName ||
+      !userData.DisplayName ||
+      !userData.City ||
+      !userData.Email ||
+      !userData.PhoneNumber ||
+      !userData.Password ||
+      !userData.ConfirmPassword
+    ) {
+      setmsg(true);
+      setsuccesOrFAIL("من فضلك أدخل جميع الحقول المطلوبة");
       return;
     }
 
-    if (userData.Email == realEmail) {
-      try {
-        const formData = new FormData();
-        for (const key in userData) {
-          formData.append(key, userData[key]);
+    if (userData.Password !== userData.ConfirmPassword) {
+      setMatchPassword("Passwords do not match.");
+      return;
+    }
+  
+    try {
+      const payload = {
+        email: userData.Email,
+        password: userData.Password,
+        confirmPassword: userData.ConfirmPassword,
+        firstName: userData.UserName,
+        lastName: userData.DisplayName,
+        governmentId: userData.City,
+        phoneNumber: userData.PhoneNumber,
+      };
+  
+      const response = await axios.post(RegesterApi, payload, {
+        headers: {
+          "Content-Type": "application/json",
+          "Accept-Language": "ar-EG",
+        },
+      });
+  
+      const res = response.data;
+  
+      if (res.succeeded) {
+        setmsg(true);
+        setMsgforsuccess(false);
+        setsuccesOrFAIL(res.message || "تم التسجيل بنجاح");
+        if (res.data?.token) {
+          cookies.set("Cookie", res.data.token);
         }
+        console.log(res.data);
+        console.log(res.data.userId);
+        setUserId(res.data.userId || "static id"); // after registration success
 
-        await axios
-          .post(`${RegesterApi}`, formData, {
-            headers: {
-              "Content-Type": "application/problem",
-              "Accept-Language": "ar-EG",
-            },
-          })
-          .then((response) => {
-            console.log("response", response);
+        setErrForImg(true);
+        setShowVerifyPopup(true);
 
-            if (response.data.isSuccess) {
-              setmsg(true);
-              setMsgforsuccess(false);
-              setsuccesOrFAIL("تم التسجيل بنجاح");
-              console.log(response.data.data.token);
-              const token = response.data.data.token;
-              cookies.set("Cookie", token);
-              console.log(response);
-              window.location.pathname = "/";
-              setErrForImg(true);
-            } else {
-              setMsgforsuccess(false);
-              setmsg(true);
-              console.log("response", response.data);
-              const finalRes = response.data.data;
-              if (finalRes != null) {
-                finalRes.map((resErr) => {
-                  if (resErr == "هذا الرقم مستخدم بالفعل") {
-                    setShowErrnum(resErr);
-                  } else if (resErr == "هذا البريد الاليكترونى مستخدم بالفعل") {
-                    setShowErremail(resErr);
-                  } else if (
-                    resErr ==
-                    " يجب ان تتكون كلمة المرور من 8 احرف على الاقل وتحتوى على رمز وحرف كبير وحرف صغير و رقم"
-                  ) {
-                    setShowErrpass(resErr);
-                  } else if (resErr == "هذا الاسم مستخدم  بالفعل") {
-                    setShowErrname(resErr);
-                  }
-                });
-              }
-              // console.log(response.data.data[0].description==null);
-              console.log("wwwwwobjeddddddssct");
-              if (response.data.data == null) {
-                setsuccesOrFAIL(response.data.message);
-              } else {
-                console.log("ee", response.data.data[0]);
-                setsuccesOrFAIL(response.data.data[0]);
-                setmsg(true);
-              }
-            }
-          });
-      } catch (err) {
-        console.log("err", err);
-        if (err.response.status == 415) {
-          setmsg(true);
-          setsuccesOrFAIL("حدث خطا خارجي");
-        }
-        if (err.response.data.errors.PhoneNumber) {
-          setErr(true);
-          console.log("الرقم");
-          setsuccesOrFAIL("phone number not correct");
-        } else if (err.response.data.errors.PhoneNumber !== undefined) {
-          setErr(false);
-          console.log(err.response.data.errors.PhoneNumber);
-        } else if (err.response.data.errors.Email !== undefined) {
-          setErr(true);
-          setsuccesOrFAIL("email not valid");
-        } else if (err.response.data.errors.Password !== undefined) {
-          setErr(true);
-          setsuccesOrFAIL(
-            "password must contain lower , upperchar , special charecter and num and contain 8 char"
-          );
-        }
-
-        if (
-          userData.UserName == "" ||
-          userData.DisplayName == "" ||
-          userData.City == "" ||
-          userData.PhoneNumber == "" ||
-          userData.Password == "" ||
-          userData.ConfirmPassword == ""
-        ) {
-          setmsg(true);
-          setsuccesOrFAIL("ادخل جميع الحقول");
-        } else {
-          setmsg(false);
-        }
+        // window.location.pathname = "/";
+      } else {
+        setmsg(true);
+        setMsgforsuccess(false);
+        setsuccesOrFAIL(res.message || "فشل التسجيل");
       }
-    } else {
-      setsuccesOrFAIL("يجب ادخال نفس الايميل الذي تم تصديقه");
-      setmsg(true);
-      console.log("userData.Email==realEmail");
+    } catch (err) {
+      const errors = err.response?.data?.errors;
+  
+      if (err.response?.status === 400 && errors) {
+        if (errors.Email) setShowErremail(errors.Email[0]);
+        if (errors.Password) setShowErrpass(errors.Password[0]);
+        if (errors.GovernmentId) setsuccesOrFAIL("اختر المحافظة من فضلك");
+        if (errors.PhoneNumber) setShowErrnum(errors.PhoneNumber[0]);
+  
+        setmsg(true);
+      } else if (err.response?.status === 415) {
+        setmsg(true);
+        setsuccesOrFAIL("حدث خطأ في نوع البيانات المرسلة");
+      } else {
+        setmsg(true);
+        setsuccesOrFAIL("حدث خطأ غير متوقع");
+      }
     }
   };
+  
 
-  console.log(succesOrFAIL);
   return (
     <>
-      <VerifyEmail compareEmail={compareEmail} />
+      {/* <VerifyEmail compareEmail={compareEmail} /> */}
+      {showVerifyPopup && <VerifyEmail userId={userId} />}
+
       {msg && (
         <SuccessOrFailMsg
           succesOrFAIL={succesOrFAIL}
@@ -496,13 +476,12 @@ function Register() {
                     },
                   }}
                 >
-                  {getCity.map((item) => {
-                    return (
-                      <MenuItem key={item.id} value={item.name}>
-                        {item.name}
-                      </MenuItem>
-                    );
-                  })}
+                 {Array.isArray(getCity) &&
+                  getCity.map((item) => (
+                    <MenuItem key={item.id} value={item.id}>
+                      {item.nameAr}
+                    </MenuItem>
+                  ))}
                 </Select>
               </FormControl>
 
