@@ -242,11 +242,12 @@ function Register() {
                 fontStyle: "normal",
                 fontWeight: "600",
                 textTransform: "capitalize",
-                marginBottom: { xs: "0", md: "0px", xl: "20px" },
+                marginBottom: { xs: "50px", md: "50px", xl: "20px" },
               }}
             >
               اشترك فى الموقع
             </Typography>
+            
             <Box
               sx={{
                 display: "flex",
@@ -255,7 +256,7 @@ function Register() {
                 marginTop: { xs: "10px", md: "0px", xl: "10px" },
               }}
             >
-              <img src={google} alt="" />
+              {/* <img src={google} alt="" /> */}
             </Box>
             <Box
               sx={{
@@ -794,6 +795,7 @@ function Register() {
                   fontWeight: "700",
                   lineHeight: "normal",
                   textTransform: "capitalize",
+                  marginTop: { xs: "0", md: "60px", xl: "20px" },
                 }}
               >
                 مرحبا بك
@@ -811,6 +813,7 @@ function Register() {
                   lineHeight: 1.5,
                   textTransform: "capitalize",
                   textAlign: "center",
+                  marginTop : { xs: "0", md: "0px", xl: "20px" }, 
                 }}
               >
                 قم بادخال بياناتك في التسجيل <br />

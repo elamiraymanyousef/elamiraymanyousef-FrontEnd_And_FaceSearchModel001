@@ -1,5 +1,4 @@
-//  saeed128@gmail.com
-// S@eed12345
+
 import { useNavigate } from "react-router-dom";
 import Cookie from "cookie-universal";
 import CssBaseline from "@mui/material/CssBaseline";
@@ -150,11 +149,84 @@ function Login() {
   // };
   const navigate = useNavigate();
 
+// const handleSubmit = async (event) => {
+//   event.preventDefault();
+//   setmsg(false);
+//   seterrInppass(false);
+//   seterrInpemail(false);
+
+//   try {
+//     const response = await axios.post(`${LoginApi}`, Form, {
+//       headers: {
+//         "Content-Type": "application/json",
+//         "Accept-Language": "ar-EG",
+//       },
+//     });
+
+//     const res = response.data;
+
+//     if (res.succeeded) {
+//       setmsg(true);
+//       setMsgforsuccess(false);
+//       setsuccesOrFAIL("تم تسجيل الدخول بنجاح");
+
+//       const token = res.data.token;
+//       const userId = res.data.userId;
+
+//       localStorage.setItem("userId", userId);
+//       cookies.set("Cookie", token);
+
+//       setErrForImg(true);
+
+//       // ✅ Redirect to homepage
+//       navigate("/HomePage");
+//     } else {
+//       setmsg(true);
+//       setMsgforsuccess(false);
+
+//       if (!Form.email && !Form.password) {
+//         setsuccesOrFAIL(res.message || "ادخل البريد وكلمة المرور");
+//         seterrInpemail(true);
+//         seterrInppass(true);
+//       } else if (!Form.email) {
+//         setsuccesOrFAIL("ادخل البريد الإلكتروني");
+//         seterrInpemail(true);
+//       } else if (!Form.password) {
+//         setsuccesOrFAIL("ادخل كلمة المرور");
+//         seterrInppass(true);
+//       } else {
+//         setsuccesOrFAIL(res.message || "فشل تسجيل الدخول");
+//       }
+//     }
+//   } catch (err) {
+//     console.log(err);
+//     setmsg(true);
+
+//     if (err.response?.data?.message) {
+//       setsuccesOrFAIL(err.response.data.message);
+//     } else {
+//       setsuccesOrFAIL("حدث خطأ غير متوقع");
+//     }
+//   }
+// };
 const handleSubmit = async (event) => {
   event.preventDefault();
   setmsg(false);
   seterrInppass(false);
   seterrInpemail(false);
+
+  if (!Form.email) {
+    seterrInpemail(true);
+  }
+  if (!Form.password) {
+    seterrInppass(true);
+  }
+
+  if (!Form.email || !Form.password) {
+    setsuccesOrFAIL("يرجى ملء جميع الحقول");
+    setmsg(true);
+    return;
+  }
 
   try {
     const response = await axios.post(`${LoginApi}`, Form, {
@@ -168,48 +240,25 @@ const handleSubmit = async (event) => {
 
     if (res.succeeded) {
       setmsg(true);
-      setMsgforsuccess(false);
       setsuccesOrFAIL("تم تسجيل الدخول بنجاح");
-
       const token = res.data.token;
       const userId = res.data.userId;
 
       localStorage.setItem("userId", userId);
       cookies.set("Cookie", token);
 
-      setErrForImg(true);
-
-      // ✅ Redirect to homepage
       navigate("/HomePage");
     } else {
       setmsg(true);
-      setMsgforsuccess(false);
-
-      if (!Form.email && !Form.password) {
-        setsuccesOrFAIL(res.message || "ادخل البريد وكلمة المرور");
-        seterrInpemail(true);
-        seterrInppass(true);
-      } else if (!Form.email) {
-        setsuccesOrFAIL("ادخل البريد الإلكتروني");
-        seterrInpemail(true);
-      } else if (!Form.password) {
-        setsuccesOrFAIL("ادخل كلمة المرور");
-        seterrInppass(true);
-      } else {
-        setsuccesOrFAIL(res.message || "فشل تسجيل الدخول");
-      }
+      setsuccesOrFAIL(res.message || "فشل تسجيل الدخول");
     }
   } catch (err) {
     console.log(err);
     setmsg(true);
-
-    if (err.response?.data?.message) {
-      setsuccesOrFAIL(err.response.data.message);
-    } else {
-      setsuccesOrFAIL("حدث خطأ غير متوقع");
-    }
+    setsuccesOrFAIL("حدث خطأ غير متوقع");
   }
 };
+
 
   const [stopAnim, setstopAnim] = useState(false);
   useEffect(() => {
@@ -422,6 +471,8 @@ const handleSubmit = async (event) => {
                 fontWeight: "600",
                 lineHeight: "normal",
                 textTransform: "capitalize",
+                marginTop: { xs: 2, md: 3, xl: 5 },
+                marginBottom : { xs: 2, md: 3, xl: 5 },
               }}
             >
               تسجيل الدخول
@@ -436,7 +487,7 @@ const handleSubmit = async (event) => {
               }}
             >
               {/* <img src={instgram} alt="" /> */}
-              <img src={google} alt="" />
+              {/* <img src={google} alt="" /> */}
               {/* <img src={facebook} alt="" /> */}
             </Box>
 
@@ -453,7 +504,7 @@ const handleSubmit = async (event) => {
                 textTransform: "capitalize",
               }}
             >
-              او قم بإستخدام حسابك
+              {/* او قم بإستخدام حسابك */}
             </Typography>
 
             <Box
