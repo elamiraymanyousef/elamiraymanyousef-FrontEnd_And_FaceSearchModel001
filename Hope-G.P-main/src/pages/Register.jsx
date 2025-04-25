@@ -1,57 +1,101 @@
-import CssBaseline from "@mui/material/CssBaseline";
-import TextField from "@mui/material/TextField";
-import FormControlLabel from "@mui/material/FormControlLabel";
-import Checkbox from "@mui/material/Checkbox";
-// import Paper from "@mui/material/Paper";
-import Box from "@mui/material/Box";
-import Grid from "@mui/material/Grid";
-// import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
-import Typography from "@mui/material/Typography";
-import { motion } from "framer-motion";
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
+import { NavLink } from "react-router-dom";
+import axios from "axios";
+import Cookie from "cookie-universal";
+
+// MUI Components
 import {
   Button,
-  Divider,
+  Box,
+  Grid,
+  Typography,
+  TextField,
   FormControl,
-  IconButton,
-  InputAdornment,
+  FormControlLabel,
+  Checkbox,
   InputLabel,
+  Select,
   MenuItem,
   OutlinedInput,
-  Select,
+  InputAdornment,
+  IconButton,
+  Divider,
+  Paper,
 } from "@mui/material";
+
+// Icons
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 
+// Components
+import VerifyEmail from "../components/home-page-components/Auth/VerifyEmail";
+import SuccessOrFailMsg from "../components/SuccessOrFailMsg";
+
+// Context
+import { useNav } from "../context/EmailContext";
+
+// API Endpoints
+import { RegesterApi, getAllGovernments } from "../apiRequests/apiRequest";
+
+// Assets
 import LoginImage from "../assets/login-image.jpg";
-import instgram from "../assets/instagram 1.png";
-import google from "../assets/google.png";
-import facebook from "../assets/facebook-logo.png";
 import username from "../assets/User.png";
 import email from "../assets/email.png";
 import password from "../assets/Lock.png";
 import city from "../assets/government.png";
 import fingerprint from "../assets/Fingerprint.png";
 import phone from "../assets/Phone.png";
-import { NavLink } from "react-router-dom";
-import { RegesterApi, getAllGovernments } from "../apiRequests/apiRequest";
-import Loading from "../components/home-page-components/Loading";
-import axios from "axios";
 
-import Cookie from "cookie-universal";
-import { Shower } from "@mui/icons-material";
-import ResetPasswordEnterEmail from "../components/home-page-components/Auth/VerifyEmail";
-import VerifyEmail from "../components/home-page-components/Auth/VerifyEmail";
-import SuccessOrFailMsg from "../components/SuccessOrFailMsg";
-import { useNav } from "../context/EmailContext";
+// Framer Motion
+import { motion } from "framer-motion";
+
+// Theme colors
+const theme = {
+  primary: "#3A7BFF",
+  secondary: "#53E0FF",
+  success: "#4ECB71",
+  background: "#F9FAFC",
+  dark: "#2A3040",
+  light: "#FFFFFF",
+  error: "#FF5252",
+  textPrimary: "#2A3040",
+  textSecondary: "#6B7280",
+  divider: "#E5E7EB",
+  gradientPrimary: "linear-gradient(45deg,rgb(68, 193, 61) 0%, #53E0FF 100%)",
+  gradientSecondary: "linear-gradient(45deg, #4ECB71 0%, #53E0FF 100%)",
+};
 
 function Register() {
-  const { Nav, handlNav } = useNav();
+  const { handlNav } = useNav();
   const [getCity, setGetCity] = useState([]);
   const [ErrForImg, setErrForImg] = useState(false);
   const [userId, setUserId] = useState("");
- 
+  const [showVerifyPopup, setShowVerifyPopup] = useState(false);
+  const [realEmail, setrealEmail] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [msg, setmsg] = useState(false);
+  const [msgforsuccess, setMsgforsuccess] = useState(false);
+  const [succesOrFAIL, setsuccesOrFAIL] = useState("");
+  const [MatchPassword, setMatchPassword] = useState("");
+  const [showErrname, setShowErrname] = useState("");
+  const [showErrnum, setShowErrnum] = useState("");
+  const [showErremail, setShowErremail] = useState("");
+  const [showErrpass, setShowErrpass] = useState("");
 
+  const [userData, setUserData] = useState({
+    UserName: "",
+    DisplayName: "",
+    City: "",
+    Email: "",
+    PhoneNumber: "",
+    Password: "",
+    ConfirmPassword: "",
+  });
+
+  const cookies = Cookie();
+
+  // Effects
   useEffect(() => {
     let isMounted = true;
   
@@ -65,62 +109,30 @@ function Register() {
       isMounted = false;
     };
   }, []);
-  
 
-  const [showVerifyPopup, setShowVerifyPopup] = useState(false);
-
-  const [realEmail, setrealEmail] = useState("");
+  // Handlers
   const compareEmail = (email) => {
     setrealEmail(email);
   };
 
-
-  const [userData, setUserData] = useState({
-    UserName: "",
-    DisplayName: "",
-    City: "",
-    Email: "",
-    PhoneNumber: "",
-    Password: "",
-    ConfirmPassword: "",
-  });
-  const [err, setErr] = useState(false);
-  const [MatchPassword, setMatchPassword] = useState("");
-  const [succesOrFAIL, setsuccesOrFAIL] = useState("");
-  const [showErrname, setShowErrname] = useState("");
-  const [showErrnum, setShowErrnum] = useState("");
-  const [showErremail, setShowErremail] = useState("");
-  const [showErrpass, setShowErrpass] = useState("");
-  const [msg, setmsg] = useState(false);
-  const [msgforsuccess, setMsgforsuccess] = useState(false);
-  // const refForm = useRef(null);
-
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-
-  const cookies = Cookie();
   const handleClickShowPassword = () => setShowPassword((show) => !show);
-
-  const handleClickShowConfirmPassword = () =>
-    setShowConfirmPassword((show) => !show);
-
-  const handleMouseDownPassword = (event) => {
-    event.preventDefault();
-  };
+  const handleClickShowConfirmPassword = () => setShowConfirmPassword((show) => !show);
+  const handleMouseDownPassword = (event) => event.preventDefault();
 
   const handleInputChange = (e) => {
-    setUserData({ ...userData, [e.target.name]: e.target.value });
     const { name, value, type, checked } = e.target;
     setUserData((prevUserData) => ({
       ...prevUserData,
       [name]: type === "checkbox" ? checked : value,
     }));
   };
+
   const handleRegisterSubmit = async (e) => {
     e.preventDefault();
     setmsg(false);
     setMsgforsuccess(true);
   
+    // Validation
     if (
       !userData.UserName ||
       !userData.DisplayName ||
@@ -136,7 +148,7 @@ function Register() {
     }
 
     if (userData.Password !== userData.ConfirmPassword) {
-      setMatchPassword("Passwords do not match.");
+      setMatchPassword("كلمات المرور غير متطابقة");
       return;
     }
   
@@ -167,14 +179,9 @@ function Register() {
         if (res.data?.token) {
           cookies.set("Cookie", res.data.token);
         }
-        console.log(res.data);
-        console.log(res.data.userId);
-        setUserId(res.data.userId || "static id"); // after registration success
-
+        setUserId(res.data.userId || "static id");
         setErrForImg(true);
         setShowVerifyPopup(true);
-
-        // window.location.pathname = "/";
       } else {
         setmsg(true);
         setMsgforsuccess(false);
@@ -199,11 +206,68 @@ function Register() {
       }
     }
   };
-  
+
+  // Common styles for form inputs
+  const inputStyles = {
+    "& .MuiInputBase-root": {
+      height: { xs: 40, md: 50, xl: 70 },
+      borderRadius: { xs: 2, md: 2, xl: 2 },
+      transition: "transform 0.2s, box-shadow 0.2s",
+      "&:hover": {
+        transform: "translateY(-2px)",
+        boxShadow: "0 5px 15px rgba(0,0,0,0.1)",
+      },
+    },
+    "& .MuiInputBase-input": {
+      padding: { xs: 3, md: 3, xl: 4 },
+      fontSize: { xs: 14, md: 16, xl: 18 },
+    },
+    "& .MuiOutlinedInput-root": {
+      "& > fieldset": {
+        borderColor: theme.divider,
+        transition: "border-color 0.3s",
+      },
+      "&:hover fieldset": {
+        borderColor: theme.primary,
+      },
+      "&.Mui-focused fieldset": {
+        borderColor: theme.primary,
+        borderWidth: 2,
+      },
+    },
+    "& .MuiFormLabel-root": {
+      fontSize: { xs: 14, md: 16, xl: 18 },
+      color: theme.textSecondary,
+      fontFamily: "'Noto Sans Arabic', 'Tajawal', sans-serif",
+    },
+    mb: 2,
+  };
+
+  // Button animation props
+  const buttonAnimation = {
+    whileHover: { scale: 1.05, boxShadow: "0 5px 15px rgba(0,0,0,0.1)" },
+    whileTap: { scale: 0.95 },
+    transition: { type: "spring", stiffness: 400, damping: 15 }
+  };
+
+  // Form container animation
+  const formContainerAnimation = {
+    initial: { opacity: 0, y: 20 },
+    animate: { opacity: 1, y: 0 },
+    transition: { duration: 0.5, staggerChildren: 0.1 }
+  };
+
+  // Error text style
+  const errorTextStyle = {
+    color: theme.error,
+    fontSize: "12px",
+    mt: 0.5,
+    mb: 1,
+    fontFamily: "'Noto Sans Arabic', 'Tajawal', sans-serif",
+  };
 
   return (
     <>
-      {/* <VerifyEmail compareEmail={compareEmail} /> */}
       {showVerifyPopup && <VerifyEmail userId={userId} />}
 
       {msg && (
@@ -213,20 +277,33 @@ function Register() {
           setmsg={setmsg}
         />
       )}
+      
       <Grid
         container
         component="main"
         sx={{
-          height: { sm: "100%", lg: "100%" },
+          height: "100vh",
           overflowX: "hidden",
-          flexWrap: "nowrap",
+          backgroundColor: theme.background,
+          direction: "rtl",
+          fontFamily: "'Noto Sans Arabic', 'Tajawal', sans-serif",
         }}
       >
-        <Grid item xs={12} sm={8} md={8} elevation={6} square>
+        {/* Form Section */}
+        <Grid 
+          item 
+          xs={12} 
+          sm={7} 
+          md={7} 
+          component={motion.div}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5 }}
+        >
           <Box
             sx={{
-              my: { xs: 8, sm: 4, xl: 8 },
-              mx: 4,
+              my: { xs: 4, sm: 6, xl: 8 },
+              mx: { xs: 2, sm: 4, xl: 6 },
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
@@ -236,28 +313,28 @@ function Register() {
               component="h1"
               variant="h3"
               sx={{
-                color: "#888",
-                fontFamily: "Inter",
-                fontSize: { xs: "18px", md: "30px", xl: "50px" },
-                fontStyle: "normal",
-                fontWeight: "600",
-                textTransform: "capitalize",
-                marginBottom: { xs: "50px", md: "50px", xl: "20px" },
+                color: theme.textPrimary,
+                fontFamily: "'Noto Sans Arabic', 'Tajawal', sans-serif",
+                fontSize: { xs: "22px", md: "32px", xl: "42px" },
+                fontWeight: "700",
+                mb: { xs: 3, md: 4, xl: 5 },
+                position: "relative",
+                "&:after": {
+                  content: '""',
+                  position: "absolute",
+                  width: "60px",
+                  height: "4px",
+                  backgroundColor: theme.primary,
+                  bottom: "-12px",
+                  left: "50%",
+                  transform: "translateX(-50%)",
+                  borderRadius: "2px",
+                }
               }}
             >
-              اشترك فى الموقع
+              اشترك في الموقع
             </Typography>
             
-            <Box
-              sx={{
-                display: "flex",
-                justifyContent: "space-around",
-                alignItems: "center",
-                marginTop: { xs: "10px", md: "0px", xl: "10px" },
-              }}
-            >
-              {/* <img src={google} alt="" /> */}
-            </Box>
             <Box
               sx={{
                 display: { xs: "flex", sm: "none" },
@@ -265,6 +342,7 @@ function Register() {
                 flexDirection: "column",
                 justifyContent: "center",
                 alignItems: "center",
+                mb: 3,
               }}
             >
               <Box
@@ -275,617 +353,530 @@ function Register() {
                   width: "150px",
                 }}
               >
-                <Divider
-                  sx={{
-                    backgroundColor: "#939393",
-                    width: { xs: "50px", md: 167 },
-                    height: 2,
-                    marginLeft: 2,
-                  }}
-                />
-                <Typography
-                  component="h4"
-                  variant="h4"
-                  sx={{
-                    color: "#939393",
-                    fontFamily: "Inter",
-                    fontSize: "15px",
-                    fontStyle: "normal",
-                    fontWeight: "400",
-                    lineHeight: "normal",
-                    textTransform: "capitalize",
-                  }}
-                >
+                <Divider sx={{ flex: 1, bgcolor: theme.divider }} />
+                <Typography sx={{ mx: 2, color: theme.textSecondary }}>
                   أو
                 </Typography>
-                <Divider
-                  sx={{
-                    backgroundColor: "#939393",
-                    width: { xs: "50px", md: 167 },
-                    height: 2,
-                    marginRight: 2,
-                  }}
-                />
+                <Divider sx={{ flex: 1, bgcolor: theme.divider }} />
               </Box>
+              
               <Button
+                component={motion.button}
+                {...buttonAnimation}
                 variant="outlined"
                 sx={{
-                  borderColor: "#408CFF",
-                  borderRadius: 100,
-                  width: 117,
-                  height: 45,
-
-                  color: "#939393",
-                  fontFamily: "Inter",
-                  fontSize: "12px",
-                  fontStyle: "normal",
-                  fontWeight: "500",
-                  lineHeight: "normal",
-                  textTransform: "capitalize",
+                  borderColor: theme.primary,
+                  borderRadius: 6,
+                  py: 1,
+                  px: 3,
+                  color: theme.primary,
+                  fontFamily: "'Noto Sans Arabic', 'Tajawal', sans-serif",
+                  fontWeight: 500,
+                  textTransform: "none",
                 }}
               >
                 <NavLink
-                  to={"/login"}
+                  to="/login"
                   onClick={() => handlNav()}
                   style={{
                     textDecoration: "none",
-                    color: "#a3a1a1",
+                    color: "inherit",
                   }}
                 >
                   تسجيل الدخول
                 </NavLink>
               </Button>
             </Box>
-            <Box
-              component="form"
-              // ref={refForm}
-              noValidate
-              onSubmit={handleRegisterSubmit}
+            
+            {/* Enhanced Form Box with Shadow */}
+            <Paper
+              elevation={0}
+              component={motion.div}
+              {...formContainerAnimation}
               sx={{
-                mt: { xs: 5, md: 2, xl: 5 },
-                display: "inline-flex",
-                flexDirection: "column",
-                alignItems: "flex-start",
-                gap: { xs: 4, md: 4, xl: 4 },
-                width: { xs: 300, md: 620 },
+                width: { xs: "95%", sm: "85%", md: "80%" },
+                borderRadius: 3,
+                overflow: "hidden",
+                boxShadow: "0 8px 30px rgba(0,0,0,0.08)",
+                background: theme.light,
+                transition: "transform 0.3s, box-shadow 0.3s",
+                "&:hover": {
+                  boxShadow: "0 12px 40px rgba(0,0,0,0.12)",
+                },
+                p: { xs: 1, md: 2 },
+                mt: { xs:1, md: 2 },
               }}
             >
-              <FormControl
-                // variant="outlined"
-                fullWidth
-              >
-                <TextField
-                  fullWidth
-                  id="UserName"
-                  label="اسم المستخدم"
-                  name="UserName"
-                  required
-                  value={userData.UserName}
-                  onChange={handleInputChange}
-                  placeholder="ادخل الاسم باللغه الانجليزية"
-                  sx={{
-                    "& .MuiInputBase-root": {
-                      height: { xs: 55, md: 60, xl: 80 },
-                      borderRadius: { xs: 5, md: 6, xl: 8 },
-                    },
-                    "& .MuiInputBase-input": {
-                      padding: { xs: 1, xl: 3 },
-                      fontSize: { xs: 15, md: 20, xl: 25 },
-                    },
-
-                    "& .MuiOutlinedInput-root": {
-                      "& > fieldset": showErrname !== "" && {
-                        borderColor: "red",
-                      },
-                    },
-                  }}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <IconButton aria-label="toggle">
-                          <img src={username} alt="userName" />
-                        </IconButton>
-                      </InputAdornment>
-                    ),
-                  }}
-                />
-              </FormControl>
-              {msg && (
-                <Typography
-                  sx={{ color: "red", fontSize: "20px", fontWeight: "400" }}
-                >
-                  {showErrname}
-                </Typography>
-              )}
-              <FormControl
-                // variant="outlined"
-                fullWidth
-              >
-                <TextField
-                  fullWidth
-                  id="DisplayName"
-                  label=" اسم المستخدم الحقيقى"
-                  name="DisplayName"
-                  required
-                  value={userData.DisplayName}
-                  onChange={handleInputChange}
-                  sx={{
-                    "& .MuiInputBase-root": {
-                      height: { xs: 55, md: 60, xl: 80 },
-                      borderRadius: { xs: 5, md: 6, xl: 8 },
-                    },
-                    "& .MuiInputBase-input": {
-                      padding: 3,
-                      fontSize: { xs: 15, md: 20, xl: 25 },
-                    },
-                  }}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <IconButton aria-label="toggle">
-                          <img src={username} alt="DisplayNAme" />
-                        </IconButton>
-                      </InputAdornment>
-                    ),
-                  }}
-                />
-              </FormControl>
-
-              <FormControl
-                variant="outlined"
-                fullWidth
-                sx={{
-                  "& .MuiInputBase-root": {
-                    height: { xs: 55, md: 60, xl: 80 },
-                    borderRadius: { xs: 5, md: 6, xl: 8 },
-                  },
-                  "& .MuiInputBase-input": {
-                    padding: 3,
-                    fontSize: { xs: 15, md: 20, xl: 25 },
-                  },
-                }}
-              >
-                <InputLabel htmlFor="City" sx={{ background: "white" }}>
-                  اختر محافظتك
-                </InputLabel>
-                <Select
-                  fullWidth
-                  label="اختر محافظتك"
-                  name="City"
-                  required
-                  value={userData.City}
-                  onChange={handleInputChange}
-                  input={
-                    <OutlinedInput
-                      startAdornment={
-                        <InputAdornment position="start">
-                          <IconButton aria-label="toggle">
-                            <img src={city} alt="City" />
-                          </IconButton>
-                        </InputAdornment>
-                      }
-                    />
-                  }
-                  IconComponent={() => null} // This line removes the dropdown arrow
-                  MenuProps={{
-                    PaperProps: {
-                      style: {
-                        maxHeight: 200, // Set the max height to control the number of visible items
-                        borderRadius: 16,
-                        marginTop: { xs: "100px" },
-                      },
-                    },
-                  }}
-                >
-                 {Array.isArray(getCity) &&
-                  getCity.map((item) => (
-                    <MenuItem key={item.id} value={item.id}>
-                      {item.nameAr}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-
-              <FormControl
-                // variant="outlined"
-                fullWidth
-              >
-                <TextField
-                  fullWidth
-                  id="Email"
-                  label="الايميل"
-                  name="Email"
-                  type={"email"}
-                  required
-                  value={userData.Email}
-                  onChange={handleInputChange}
-                  sx={{
-                    "& .MuiInputBase-root": {
-                      height: { xs: 55, md: 60, xl: 80 },
-                      borderRadius: { xs: 5, md: 6, xl: 8 },
-                    },
-                    "& .MuiInputBase-input": {
-                      padding: 3,
-                      fontSize: { xs: 15, md: 20, xl: 25 },
-                    },
-
-                    "& .MuiOutlinedInput-root": {
-                      "& > fieldset": showErremail !== "" && {
-                        borderColor: "red",
-                      },
-                    },
-                    // "& .MuiFormLabel-root": {
-                    //   fontSize: 25,
-                    //   color: "#000",
-                    //   marginLeft: -1,
-                    // },
-                  }}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <IconButton aria-label="toggle">
-                          <img src={email} alt="Email" />
-                        </IconButton>
-                      </InputAdornment>
-                    ),
-                  }}
-                />
-              </FormControl>
-              {msg && (
-                <Typography
-                  sx={{ color: "red", fontSize: "20px", fontWeight: "400" }}
-                >
-                  {showErremail}
-                </Typography>
-              )}
-              <FormControl
-                // variant="outlined"
-                fullWidth
-              >
-                <TextField
-                  fullWidth
-                  id="PhoneNumber"
-                  label="رقم الهاتف"
-                  name="PhoneNumber"
-                  required
-                  value={userData.PhoneNumber}
-                  onChange={handleInputChange}
-                  sx={{
-                    "& .MuiInputBase-root": {
-                      height: { xs: 55, md: 60, xl: 80 },
-                      borderRadius: { xs: 5, md: 6, xl: 8 },
-                    },
-                    "& .MuiInputBase-input": {
-                      padding: 3,
-                      fontSize: { xs: 15, md: 20, xl: 25 },
-                    },
-
-                    "& .MuiOutlinedInput-root": {
-                      "& > fieldset": showErrnum !== "" && {
-                        borderColor: "red",
-                      },
-                    },
-                  }}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <IconButton aria-label="toggle">
-                          <img src={phone} alt="PhoneNumber" />
-                        </IconButton>
-                      </InputAdornment>
-                    ),
-                  }}
-                />
-              </FormControl>
-              {msg && (
-                <Typography
-                  sx={{ color: "red", fontSize: "20px", fontWeight: "400" }}
-                >
-                  {showErrnum}
-                </Typography>
-              )}
-              <FormControl variant="outlined" fullWidth>
-                <OutlinedInput
-                  sx={{
-                    "& .MuiInputBase-input": {
-                      padding: 3,
-                      fontSize: { xs: 15, md: 20, xl: 25 },
-                    },
-                    "& .MuiFormLabel-root": {
-                      fontSize: { xs: 15, md: 20, xl: 25 },
-                      color: "#000",
-                      marginLeft: -1,
-                    },
-
-                    "& .MuiOutlinedInput-root": {
-                      "& > fieldset": showErrpass !== "" && {
-                        borderColor: "red",
-                      },
-                    },
-                    height: { xs: 55, md: 60, xl: 80 },
-                    borderRadius: { xs: 5, md: 6, xl: 8 },
-                    padding: 2,
-                  }}
-                  id="outlined-adornment-password"
-                  type={showPassword ? "text" : "Password"}
-                  startAdornment={
-                    <IconButton aria-label="toggle" edge="end">
-                      <img src={password} alt="Password" />
-                    </IconButton>
-                  }
-                  endAdornment={
-                    <InputAdornment position="start">
-                      <IconButton
-                        aria-label="toggle Password visibility"
-                        onClick={handleClickShowPassword}
-                        onMouseDown={handleMouseDownPassword}
-                        edge="end"
-                      >
-                        {showPassword ? <VisibilityOff /> : <Visibility />}
-                      </IconButton>
-                    </InputAdornment>
-                  }
-                  label="Password"
-                  name="Password"
-                  required
-                  value={userData.Password}
-                  onChange={handleInputChange}
-                  inputProps={{ minLength: 8 }}
-                />
-                <InputLabel htmlFor="outlined-adornment-password">
-                  كلمة المرور
-                </InputLabel>
-              </FormControl>
-              {msg && (
-                <Typography
-                  sx={{ color: "red", fontSize: "20px", fontWeight: "400" }}
-                >
-                  {showErrpass}
-                </Typography>
-              )}
-              <FormControl variant="outlined" fullWidth>
-                <OutlinedInput
-                  sx={{
-                    "& .MuiInputBase-input": {
-                      padding: 3,
-                      fontSize: { xs: 15, md: 20, xl: 25 },
-                    },
-                    "& .MuiFormLabel-root": {
-                      fontSize: { xs: 15, md: 20, xl: 25 },
-                      color: "#000",
-                      marginLeft: -1,
-                    },
-                    height: { xs: 55, md: 60, xl: 80 },
-                    borderRadius: { xs: 5, md: 6, xl: 8 },
-                    padding: 2,
-                  }}
-                  id="outlined-adornment-password confirmPassword"
-                  type={showConfirmPassword ? "text" : "Password"}
-                  startAdornment={
-                    <IconButton aria-label="toggle" edge="end">
-                      <img src={fingerprint} alt="Password" />
-                    </IconButton>
-                  }
-                  endAdornment={
-                    <InputAdornment position="start">
-                      <IconButton
-                        aria-label="toggle password visibility"
-                        onClick={handleClickShowConfirmPassword}
-                        onMouseDown={handleMouseDownPassword}
-                        edge="end"
-                      >
-                        {showConfirmPassword ? (
-                          <VisibilityOff />
-                        ) : (
-                          <Visibility />
-                        )}
-                      </IconButton>
-                    </InputAdornment>
-                  }
-                  label="confirmPassword"
-                  name="ConfirmPassword"
-                  value={userData.ConfirmPassword}
-                  onChange={handleInputChange}
-                  required
-                  inputProps={{ minLength: 8 }}
-                />
-                <InputLabel htmlFor="outlined-adornment-password">
-                  تأكيد كلمة المرور
-                </InputLabel>
-              </FormControl>
-
-              {MatchPassword == "" ? (
-                ""
-              ) : (
-                <Typography
-                  sx={{ fontSize: "20px", fontWeight: "400", color: "red" }}
-                >
-                  {MatchPassword}
-                </Typography>
-              )}
-              <FormControlLabel
-                sx={{ color: "#0038FF", marginTop: { md: "-15px", xl: "0" } }}
-                control={<Checkbox value="remember" color="primary" />}
-                label="هل توافق علي البنود وسياسة الأمان"
-              />
               <Box
+                component="form"
+                noValidate
+                onSubmit={handleRegisterSubmit}
                 sx={{
                   width: "100%",
-                  display: "flex",
-                  justifyContent: { xs: "center", md: "flex-end" },
-                  marginRight: { xs: "0", md: "60px" },
-                  zIndex: "11",
                 }}
-
-                // transition={{duration:.5}}
               >
-                <Button
-                  component={motion.button}
-                  type="submit"
-                  variant="contained"
-                  color="success"
-                  // onClick={handleRegisterSubmit}
-                  sx={{
-                    mb: 2,
-                    borderRadius: 100,
-                    background: "#5FE164",
-                    width: { xs: 114, md: 170, xl: 214 },
-                    height: { xs: 45, md: 55, xl: 65 },
-                    zIndex: 13,
-                    fontSize: { xs: "11px", md: "15px", xl: "20px" },
+                {/* UserName Field */}
+                <FormControl fullWidth sx={{ mb: 2 }}>
+                  <TextField
+                    fullWidth
+                    id="UserName"
+                    label="اسم المستخدم"
+                    name="UserName"
+                    required
+                    value={userData.UserName}
+                    onChange={handleInputChange}
+                    placeholder="ادخل الاسم باللغة الإنجليزية"
+                    sx={{
+                      ...inputStyles,
+                      "& .MuiOutlinedInput-root": {
+                        "& > fieldset": showErrname !== "" ? {
+                          borderColor: theme.error,
+                        } : inputStyles["& .MuiOutlinedInput-root"]["& > fieldset"],
+                      },
+                    }}
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <IconButton aria-label="toggle" sx={{ p: 0 }}>
+                            <img src={username} alt="userName" width="20" />
+                          </IconButton>
+                        </InputAdornment>
+                      ),
+                    }}
+                  />
+                  {showErrname && (
+                    <Typography sx={errorTextStyle}>
+                      {showErrname}
+                    </Typography>
+                  )}
+                </FormControl>
+
+                {/* DisplayName Field */}
+                <FormControl fullWidth sx={{ mb: 2 }}>
+                  <TextField
+                    fullWidth
+                    id="DisplayName"
+                    label="اسم المستخدم الحقيقي"
+                    name="DisplayName"
+                    required
+                    value={userData.DisplayName}
+                    onChange={handleInputChange}
+                    sx={inputStyles}
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <IconButton aria-label="toggle" sx={{ p: 0 }}>
+                            <img src={username} alt="DisplayName" width="20" />
+                          </IconButton>
+                        </InputAdornment>
+                      ),
+                    }}
+                  />
+                </FormControl>
+
+                {/* City Field */}
+                <FormControl fullWidth sx={{ ...inputStyles, mb: 2 }}>
+                  <InputLabel htmlFor="City" sx={{ background: theme.light, paddingX: 0.5 }}>
+                    اختر محافظتك
+                  </InputLabel>
+                  <Select
+                    fullWidth
+                    label="اختر محافظتك"
+                    name="City"
+                    required
+                    value={userData.City}
+                    onChange={handleInputChange}
+                    input={
+                      <OutlinedInput
+                        startAdornment={
+                          <InputAdornment position="start">
+                            <IconButton aria-label="toggle" sx={{ p: 0 }}>
+                              <img src={city} alt="City" width="20" />
+                            </IconButton>
+                          </InputAdornment>
+                        }
+                      />
+                    }
+                    MenuProps={{
+                      PaperProps: {
+                        style: {
+                          maxHeight: 200,
+                          borderRadius: 8,
+                          boxShadow: "0 4px 20px rgba(0,0,0,0.15)",
+                        },
+                      },
+                    }}
+                  >
+                    {Array.isArray(getCity) &&
+                      getCity.map((item) => (
+                        <MenuItem key={item.id} value={item.id}>
+                          {item.nameAr}
+                        </MenuItem>
+                      ))}
+                  </Select>
+                </FormControl>
+
+                {/* Email Field */}
+                <FormControl fullWidth sx={{ mb: 2 }}>
+                  <TextField
+                    fullWidth
+                    id="Email"
+                    label="البريد الإلكتروني"
+                    name="Email"
+                    type="email"
+                    required
+                    value={userData.Email}
+                    onChange={handleInputChange}
+                    sx={{
+                      ...inputStyles,
+                      "& .MuiOutlinedInput-root": {
+                        "& > fieldset": showErremail !== "" ? {
+                          borderColor: theme.error,
+                        } : inputStyles["& .MuiOutlinedInput-root"]["& > fieldset"],
+                      },
+                    }}
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <IconButton aria-label="toggle" sx={{ p: 0 }}>
+                            <img src={email} alt="Email" width="20" />
+                          </IconButton>
+                        </InputAdornment>
+                      ),
+                    }}
+                  />
+                  {showErremail && (
+                    <Typography sx={errorTextStyle}>
+                      {showErremail}
+                    </Typography>
+                  )}
+                </FormControl>
+
+                {/* Phone Number Field */}
+                <FormControl fullWidth sx={{ mb: 2 }}>
+                  <TextField
+                    fullWidth
+                    id="PhoneNumber"
+                    label="رقم الهاتف"
+                    name="PhoneNumber"
+                    required
+                    value={userData.PhoneNumber}
+                    onChange={handleInputChange}
+                    sx={{
+                      ...inputStyles,
+                      "& .MuiOutlinedInput-root": {
+                        "& > fieldset": showErrnum !== "" ? {
+                          borderColor: theme.error,
+                        } : inputStyles["& .MuiOutlinedInput-root"]["& > fieldset"],
+                      },
+                    }}
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <IconButton aria-label="toggle" sx={{ p: 0 }}>
+                            <img src={phone} alt="PhoneNumber" width="20" />
+                          </IconButton>
+                        </InputAdornment>
+                      ),
+                    }}
+                  />
+                  {showErrnum && (
+                    <Typography sx={errorTextStyle}>
+                      {showErrnum}
+                    </Typography>
+                  )}
+                </FormControl>
+
+                {/* Password Field */}
+                <FormControl fullWidth variant="outlined" sx={{ mb: 2 }}>
+                  <InputLabel htmlFor="outlined-adornment-password" sx={{ background: theme.light, paddingX: 0.5 }}>
+                    كلمة المرور
+                  </InputLabel>
+                  <OutlinedInput
+                    id="outlined-adornment-password"
+                    type={showPassword ? "text" : "password"}
+                    name="Password"
+                    required
+                    value={userData.Password}
+                    onChange={handleInputChange}
+                    sx={{
+                      ...inputStyles,
+                      "& > fieldset": showErrpass !== "" ? {
+                        borderColor: theme.error,
+                      } : {},
+                    }}
+                    startAdornment={
+                      <InputAdornment position="start">
+                        <IconButton aria-label="toggle" sx={{ p: 0 }}>
+                          <img src={password} alt="Password" width="20" />
+                        </IconButton>
+                      </InputAdornment>
+                    }
+                    endAdornment={
+                      <InputAdornment position="end">
+                        <IconButton
+                          aria-label="toggle password visibility"
+                          onClick={handleClickShowPassword}
+                          onMouseDown={handleMouseDownPassword}
+                        >
+                          {showPassword ? <VisibilityOff /> : <Visibility />}
+                        </IconButton>
+                      </InputAdornment>
+                    }
+                    label="كلمة المرور"
+                    inputProps={{ minLength: 8 }}
+                  />
+                  {showErrpass && (
+                    <Typography sx={errorTextStyle}>
+                      {showErrpass}
+                    </Typography>
+                  )}
+                </FormControl>
+
+                {/* Confirm Password Field */}
+                <FormControl fullWidth variant="outlined" sx={{ mb: 2 }}>
+                  <InputLabel htmlFor="outlined-adornment-confirm-password" sx={{ background: theme.light, paddingX: 0.5 }}>
+                    تأكيد كلمة المرور
+                  </InputLabel>
+                  <OutlinedInput
+                    id="outlined-adornment-confirm-password"
+                    type={showConfirmPassword ? "text" : "password"}
+                    name="ConfirmPassword"
+                    required
+                    value={userData.ConfirmPassword}
+                    onChange={handleInputChange}
+                    sx={inputStyles}
+                    startAdornment={
+                      <InputAdornment position="start">
+                        <IconButton aria-label="toggle" sx={{ p: 0 }}>
+                          <img src={fingerprint} alt="ConfirmPassword" width="20" />
+                        </IconButton>
+                      </InputAdornment>
+                    }
+                    endAdornment={
+                      <InputAdornment position="end">
+                        <IconButton
+                          aria-label="toggle confirm password visibility"
+                          onClick={handleClickShowConfirmPassword}
+                          onMouseDown={handleMouseDownPassword}
+                        >
+                          {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
+                        </IconButton>
+                      </InputAdornment>
+                    }
+                    label="تأكيد كلمة المرور"
+                    inputProps={{ minLength: 8 }}
+                  />
+                  {MatchPassword && (
+                    <Typography sx={errorTextStyle}>
+                      {MatchPassword}
+                    </Typography>
+                  )}
+                </FormControl>
+
+                {/* Terms Checkbox */}
+                <FormControlLabel
+                  sx={{ 
+                    color: theme.textSecondary,
+                    my: 1,
+                    "& .MuiCheckbox-root": {
+                      color: theme.primary,
+                    }
                   }}
-                  initial={{ x: -350, y: -200, backgroundColor: "#408CFF" }}
-                  animate={{ x: 0, y: 0, backgroundColor: "#5FE164" }}
+                  control={
+                    <Checkbox 
+                      value="agree" 
+                      color="primary" 
+                      size="small"
+                    />
+                  }
+                  label={
+                    <Typography sx={{ fontSize: { xs: 12, md: 14 } }}>
+                      أوافق على شروط الاستخدام وسياسة الخصوصية
+                    </Typography>
+                  }
+                />
+
+                {/* Submit Button */}
+                <Box
+                  sx={{
+                    width: "100%",
+                    display: "flex",
+                    justifyContent: "center",
+                    mt: 2,
+                  }}
                 >
-                  إبدء الإستخدام
-                </Button>
+                  <Button
+                    component={motion.button}
+                    type="submit"
+                    variant="contained"
+                    {...buttonAnimation}
+                    sx={{
+                      py: { xs: 1, md: 1.5 },
+                      px: { xs: 4, md: 6 },
+                      borderRadius: 6,
+                      background: theme.gradientPrimary,
+                      color: theme.light,
+                      fontSize: { xs: 14, md: 16, xl: 18 },
+                      fontWeight: 600,
+                      textTransform: "none",
+                      boxShadow: "0 4px 15px rgba(51, 106, 215, 0.3)",
+                      "&:hover": {
+                        background: theme.gradientPrimary,
+                        boxShadow: "0 8px 20px rgba(58, 123, 255, 0.4)",
+                      }
+                    }}
+                  >
+                    إنشاء حساب
+                  </Button>
+                </Box>
               </Box>
-            </Box>
+            </Paper>
           </Box>
         </Grid>
 
+        {/* Image Section */}
         <Grid
           component={motion.div}
-          initial={{ right: -842 }}
-          animate={{ right: 0 }}
-          transition={{ duration: 1.2 }}
+          initial={{ opacity: 0, x: 50 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.8 }}
           item
-          xs={0}
-          sm={0}
-          md={4}
+          xs={false}
+          sm={5}
+          md={5}
           sx={{
-            backgroundImage: `url(${LoginImage})`,
-            backgroundRepeat: "no-repeat",
-            transform: "scaleX(-1)",
-            backgroundPosition: " -300px ",
-            backgroundSize: "cover",
             position: "relative",
-            zIndex: 11,
-
-            display: { xs: "none", sm: "grid" },
+            display: { xs: "none", sm: "block" },
+            overflow: "hidden",
+            borderTopLeftRadius: 12,
+            borderBottomLeftRadius: 12,
           }}
         >
           <Box
             sx={{
+              position: "absolute",
+              width: "100%",
               height: "100%",
-              width: { md: "88%", lg: "100%" },
-              backgroundColor: "rgb(0 0 0 / 32%)",
-              transform: "scaleX(-1)",
-              paddingTop: "30px",
+              backgroundImage: `url(${LoginImage})`,
+              backgroundRepeat: "no-repeat",
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+              
+              "&:before": {
+                content: '""',
+                position: "absolute",
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+              background: "linear-gradient(to bottom, rgba(23, 25, 31, 0.7), rgba(24, 29, 39, 0.7))",
+                zIndex: 1,
+              }
+            }}
+          />
+          
+          <Box
+            sx={{
+              height: "100%",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              position: "relative",
+              zIndex: 2,
+              p: 4,
             }}
           >
-            <Box
-              sx={{
-                height: "100%",
-                display: "flex",
-                justifyContent: { md: "start", xl: "center" },
-                flexDirection: "column",
-                alignItems: "center",
-                gap: 10,
-              }}
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5, duration: 0.5 }}
             >
               <Typography
-                component="h1"
-                variant="h1"
+                variant="h3"
                 sx={{
-                  color: "#fff",
-                  fontFamily: "Inter",
-                  fontSize: { sm: "40px", xl: "50px" },
-                  fontStyle: "normal",
-                  fontWeight: "700",
-                  lineHeight: "normal",
-                  textTransform: "capitalize",
-                  marginTop: { xs: "0", md: "60px", xl: "20px" },
-                }}
-              >
-                مرحبا بك
-              </Typography>
-
-              <Typography
-                component="h4"
-                variant="h4"
-                sx={{
-                  color: "rgba(255, 255, 255, 0.75)",
-                  fontFamily: "Rubik",
-                  fontSize: { sm: "20px", xl: "25px" },
-                  fontStyle: "normal",
-                  fontWeight: "700",
-                  lineHeight: 1.5,
-                  textTransform: "capitalize",
+                  color: theme.light,
+                  fontFamily: "'Noto Sans Arabic', 'Tajawal', sans-serif",
+                  fontSize: { sm: "32px", md: "42px" },
+                  fontWeight: 700,
+                  mb: 4,
                   textAlign: "center",
-                  marginTop : { xs: "0", md: "0px", xl: "20px" }, 
                 }}
               >
-                قم بادخال بياناتك في التسجيل <br />
-                لبدء الإستخدام
+                مرحباً بك
               </Typography>
-              <Box
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.7, duration: 0.5 }}
+            >
+              <Typography
                 sx={{
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
+                  color: "rgba(255, 255, 255, 0.9)",
+                  fontFamily: "'Noto Sans Arabic', 'Tajawal', sans-serif",
+                  fontSize: { sm: "16px", md: "18px" },
+                  fontWeight: 500,
+                  textAlign: "center",
+                  mb: 6,
+                  lineHeight: 1.7,
                 }}
               >
-                <Divider
-                  sx={{
-                    backgroundColor: "#fff",
-                    width: 167,
-                    height: -1,
-                    marginLeft: 2,
-                  }}
-                />
-                <Typography
-                  component="h4"
-                  variant="h4"
-                  sx={{
-                    color: "#fff",
-                    fontFamily: "Inter",
-                    fontSize: "25px",
-                    fontStyle: "normal",
-                    fontWeight: "400",
-                    lineHeight: "normal",
-                    textTransform: "capitalize",
-                  }}
-                >
-                  أو
-                </Typography>
-                <Divider
-                  sx={{
-                    backgroundColor: "#fff",
-                    width: 167,
-                    height: -1,
-                    marginRight: 2,
-                  }}
-                />
-              </Box>
+                قم بإدخال بياناتك في التسجيل <br />
+                لبدء استخدام جميع خدماتنا
+              </Typography>
+            </motion.div>
+
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                mb: 4,
+                width: "100%",
+              }}
+            >
+              <Divider sx={{ flex: 1, bgcolor: "rgba(255,255,255,0.3)" }} />
+              <Typography sx={{ mx: 2, color: theme.light }}>
+                أو
+              </Typography>
+              <Divider sx={{ flex: 1, bgcolor: "rgba(255,255,255,0.3)" }} />
+            </Box>
+
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
               <Button
                 variant="outlined"
                 sx={{
-                  borderColor: "#53E0FF",
-                  borderRadius: 100,
-                  width: 250,
-                  height: { md: 65, xl: 85 },
-
-                  color: "#D3D3D3",
-                  fontFamily: "Inter",
-                  fontSize: "25px",
-                  fontStyle: "normal",
-                  fontWeight: "500",
-                  lineHeight: "normal",
-                  textTransform: "capitalize",
+                  borderColor: "rgba(255,255,255,0.5)",
+                  color: theme.light,
+                  borderRadius: 6,
+                  py: 1.5,
+                  px: 4,
+                  fontSize: { sm: "14px", md: "16px" },
+                  fontWeight: 500,
+                  textTransform: "none",
+                  "&:hover": {
+                    borderColor: theme.light,
+                    background: "rgba(255,255,255,0.1)",
+                  }
                 }}
               >
                 <NavLink
-                  to={"/login"}
+                  to="/login"
                   style={{
                     textDecoration: "none",
-                    color: "#D3D3D3",
+                    color: "inherit",
+                    
                   }}
                 >
                   تسجيل الدخول
                 </NavLink>
               </Button>
-            </Box>
+            </motion.div>
           </Box>
         </Grid>
       </Grid>
@@ -894,3 +885,4 @@ function Register() {
 }
 
 export default Register;
+ 
