@@ -63,15 +63,15 @@ export const UnHidePosts =
 export const GetArchivedPosts =
   "https://hope3221-001-site1.btempurl.com/api/Posts/GetArchivedPosts";
 export const GetAllPosts =
-  "https://hope3221-001-site1.btempurl.com/api/Posts/GetAllPosts";
+  "http://hopesystem.runasp.net/api/Reports?reportSubjectType=1";
 export const GetPostThings =
-  "https://hope3221-001-site1.btempurl.com/api/Posts/GetPostThings";
+  "http://hopesystem.runasp.net/api/Reports?reportSubjectType=2";
 export const GetPostOfShelters =
-  "https://hope3221-001-site1.btempurl.com/api/Posts/GetPostOfShelters";
+  "http://hopesystem.runasp.net/api/Reports/by-missing-state?missingState=2";
 export const GetPostOfAccidents =
-  "https://hope3221-001-site1.btempurl.com/api/Posts/GetPostOfAccidents";
+  "http://hopesystem.runasp.net/api/Reports/by-missing-state?missingState=1";
 export const GetPostOfLosties =
-  "https://hope3221-001-site1.btempurl.com/api/Posts/GetPostOfLosties";
+  "http://hopesystem.runasp.net/api/Reports/by-missing-state?missingState=0";
 export const HidePost =
   "https://hope3221-001-site1.btempurl.com/api/Posts/HidePost";
 export const DeletePost =

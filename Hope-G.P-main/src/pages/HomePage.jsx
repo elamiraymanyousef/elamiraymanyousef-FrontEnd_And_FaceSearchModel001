@@ -84,15 +84,16 @@ function HomePage() {
   const handleFetchData = async (apiEndpoint, pageNumber) => {
     try {
       const response = await axios.get(
-        `${apiEndpoint}?PageNumber=${pageNumber}`,
+        `${apiEndpoint}&PageNumber=${pageNumber||1}&pageSize=10`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         }
       );
-      const responseData = response.data.data;
-
+      const responseData = response.data.data.items;
+      console.log(response.data.data.items);
+      
       if (responseData.length === 0) {
         setMoreDataAvailable(false);
       } else {
@@ -100,6 +101,8 @@ function HomePage() {
         setApiAllData((prevData) => {
           // Use a Set to avoid duplicates
           const uniqueData = new Set([...prevData, ...responseData]);
+          console.log(Array.from(uniqueData));
+          
           return Array.from(uniqueData);
         });
       }
@@ -128,21 +131,35 @@ function HomePage() {
   };
 
   // Use useEffect to trigger the API request when the component mounts
+  // useEffect(() => {
+  //   if (window.innerWidth <= 768) {
+  //     setIsSearchVisible(true);
+  //   }
+  //   // Fetch initial data based on the selected category
+  //   if (selectedCategory) {
+  //     console.log("137",selectedCategory);
+      
+  //     const apiEndpoint = getCategoryEndpoint(selectedCategory); // Include PageNumber in the API endpoint
+  //     handleFetchData(apiEndpoint, PageNumber);
+  //   }
+  //   window.addEventListener("scroll", handleScroll);
+  //   return () => {
+  //     window.removeEventListener("scroll", handleScroll);
+  //   };
+  // }, [selectedCategory, PageNumber]); // Include PageNumber in the dependencies array
   useEffect(() => {
     if (window.innerWidth <= 768) {
       setIsSearchVisible(true);
     }
-    // Fetch initial data based on the selected category
+  
     if (selectedCategory) {
-      const apiEndpoint = getCategoryEndpoint(selectedCategory); // Include PageNumber in the API endpoint
+      const apiEndpoint = getCategoryEndpoint(selectedCategory);
       handleFetchData(apiEndpoint, PageNumber);
     }
-    window.addEventListener("scroll", handleScroll);
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-    };
-  }, [selectedCategory, PageNumber]); // Include PageNumber in the dependencies array
+  }, [selectedCategory, PageNumber]);
+  
 
+  
   console.log(PageNumber);
   const getCategoryEndpoint = (category) => {
     // Map category to corresponding API endpoint
@@ -156,6 +173,9 @@ function HomePage() {
     return categoryEndpoints[category] || "";
   };
   const handleCategorySelect = (event, category) => {
+    console.log("category = ",category);
+    
+
     setIsOpen(false);
     setApiAllData([]); // Reset apiAllData array
     setPageNumber(0); // Reset PageNumber to 0 when a new category is selected

@@ -8,6 +8,7 @@ import IconButton from "@mui/material/IconButton";
 import ClearIcon from "@mui/icons-material/Clear";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import { Box, CardContent } from "@mui/material";
+import { Typography ,Button } from "@mui/material";
 
 // import PostedPerson from "../../assets/person.png";
 import shareIcon from "../../assets/shareicon.png";
@@ -23,12 +24,13 @@ import { HidePost, DeletePost } from "../../apiRequests/apiRequest";
 const Post = ({ data, onClick, navigateToUserProfile }) => {
   // Get role from sessionStorage
   const role = sessionStorage.getItem("role");
-
+  console.log("inputpost = ",data);
+  
   const [isHidden, setIsHidden] = useState(false);
   const [isPinnedMsg, setIsPinnedMsg] = useState(false);
 
   // This will give you the current URL
-  const postId = data.id;
+  const postId = data.id; 
   const isPeople = data.isPeople;
   const cookies = Cookie();
   const token = cookies.get("Cookie");
@@ -171,8 +173,8 @@ const Post = ({ data, onClick, navigateToUserProfile }) => {
           position: "relative",
         }}
       >
-        <CardContent sx={{ height: { xs: "320px", md: "350px", xl: "490px" } }}>
-          {/* Your CardHeader content here */}
+        {/* <CardContent sx={{ height: { xs: "320px", md: "350px", xl: "490px" } }}>
+          {}
           <CardHeader
             sx={{ padding: "0" }}
             avatar={
@@ -196,8 +198,7 @@ const Post = ({ data, onClick, navigateToUserProfile }) => {
                   height: "50px",
                   width: "50px",
                   borderRadius: "50%",
-                  // background:
-                  //   "linear-gradient(to right, rgba(162, 162, 162, 0.7), rgba(202, 202, 202, 0.4))",
+                 
                   backgroundColor: "#B7B6BE",
                   textAlign: "center",
                   padding: "2px",
@@ -240,8 +241,76 @@ const Post = ({ data, onClick, navigateToUserProfile }) => {
               </p>
             </Box>
           </Box>
-        </CardContent>
+        </CardContent> */}
+<Box
+    sx={{
+      width: "100%",
+      height: { xs: "200px", md: "250px" },
+      backgroundImage: `url(http://hopesystem.runasp.net/${data.missingPerson ? data.missingPerson.imagePath : data.missingThing?.imagePath})`,
+      backgroundSize: "cover",
+      backgroundPosition: "center",
+    }}
+  />
 
+  <CardContent sx={{ padding: "20px" }}>
+    {/* اسم النوع */}
+    <Typography
+      variant="h6"
+      sx={{
+        fontWeight: "bold",
+        fontSize: { xs: "18px", md: "22px" },
+        textAlign: "center",
+        color: "#1976d2",
+        marginBottom: "10px",
+      }}
+    >
+      {data.missingPerson ? "بلاغ عن مفقود" : data.missingThing ? "بلاغ عن شيء مفقود" : "بلاغ"}
+    </Typography>
+
+    {/* معلومات البوست */}
+    <Box sx={{ marginBottom: 1 }}>
+      {data.missingPerson ? (
+        <>
+          <Typography>الاسم: <strong>{data.missingPerson.name || "غير متوفر"}</strong></Typography>
+          <Typography>العمر: <strong>{data.missingPerson.age || "غير محدد"}</strong> سنة</Typography>
+          <Typography>الوصف: <strong>{data.missingPerson.description || "لا يوجد وصف"}</strong></Typography>
+        </>
+      ) : data.missingThing ? (
+        <>
+          <Typography>نوع الشيء: <strong>{data.missingThing.type || "غير محدد"}</strong></Typography>
+          <Typography>الوصف: <strong>{data.missingThing.description || "لا يوجد وصف"}</strong></Typography>
+        </>
+      ) : (
+        <Typography>لا توجد معلومات محددة</Typography>
+      )}
+    </Box>
+
+    {/* معلومات اضافية */}
+    <Box sx={{ marginBottom: 2 }}>
+      <Typography>المحافظة: {data.government?.nameAr || "غير محدد"}</Typography>
+      <Typography>المركز: {data.center?.nameAr || "غير محدد"}</Typography>
+      <Typography>رقم الهاتف: {data.phoneNumber || "غير متوفر"}</Typography>
+      <Typography>تاريخ الحادثة: {new Date(data.incidentTime).toLocaleDateString('ar-EG')}</Typography>
+    </Box>
+
+    {/* زر التفاصيل أو الإجراءات */}
+    {/* <Box
+      sx={{
+        display: "flex",
+        justifyContent: "center",
+        marginTop: "10px",
+      }}
+    >
+      <Button
+        variant="contained"
+        color="primary"
+        onClick={handleBodyClick}
+        sx={{ borderRadius: "30px", paddingX: "30px" }}
+      >
+        عرض التفاصيل
+      </Button>
+    </Box> */}
+  </CardContent>
         <CardActions
           sx={{
             justifyContent: "space-around",
