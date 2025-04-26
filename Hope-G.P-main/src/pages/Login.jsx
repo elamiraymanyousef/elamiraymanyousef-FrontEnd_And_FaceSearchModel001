@@ -1,20 +1,22 @@
-//  saeed128@gmail.com
-// S@eed12345
 import { useNavigate } from "react-router-dom";
 import Cookie from "cookie-universal";
-import CssBaseline from "@mui/material/CssBaseline";
-import TextField from "@mui/material/TextField";
-import FormControlLabel from "@mui/material/FormControlLabel";
-import Checkbox from "@mui/material/Checkbox";
-import Link from "@mui/material/Link";
-// import Paper from "@mui/material/Paper";
-import Box from "@mui/material/Box";
-import Grid from "@mui/material/Grid";
-// import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
-import Typography from "@mui/material/Typography";
-
 import { useEffect, useState } from "react";
+import { NavLink } from "react-router-dom";
+import { motion } from "framer-motion";
+import axios from "axios";
+import { LoginApi } from "../apiRequests/apiRequest";
+import ChangePassword from "../components/home-page-components/Auth/ChangePassword";
+import SuccessOrFailMsg from "../components/SuccessOrFailMsg";
+import { useNav } from "../context/EmailContext";
+
+// MUI Imports
 import {
+  TextField,
+  FormControlLabel,
+  Checkbox,
+  Box,
+  Grid,
+  Typography,
   Button,
   Divider,
   FormControl,
@@ -22,199 +24,92 @@ import {
   InputAdornment,
   InputLabel,
   OutlinedInput,
-  // duration,
+  Paper,
+  Container,
 } from "@mui/material";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
+import EmailIcon from "@mui/icons-material/Email";
+import LockIcon from "@mui/icons-material/Lock";
 
+// Image imports
 import LoginImage from "../assets/login-image.jpg";
-import instgram from "../assets/instagram 1.png";
-import google from "../assets/google.png";
-import facebook from "../assets/facebook-logo.png";
-import email from "../assets/email.png";
-import password from "../assets/Lock.png";
-import { NavLink } from "react-router-dom";
-import {
-  // AnimatePresence,
-  motion,
-} from "framer-motion";
-import axios from "axios";
-import { LoginApi } from "../apiRequests/apiRequest";
-import Loading from "../components/home-page-components/Loading";
-import ChangePassword from "../components/home-page-components/Auth/ChangePassword";
-import SuccessOrFailMsg from "../components/SuccessOrFailMsg";
-
-import { useNav } from "../context/EmailContext";
 
 function Login() {
   const { Nav, handlNav } = useNav();
-  console.log(Nav);
+  const navigate = useNavigate();
+  const cookies = Cookie();
+  
   const [Form, setForm] = useState({
     email: "",
     password: "",
     rememberMe: true
   });
+  
   const [changePass, setChangePass] = useState(false);
-  const isOpen = () => {
-    setChangePass(true);
-  };
-  const popUpchangPass = (data) => {
-    setChangePass(data);
-  };
-
-  const cookies = Cookie();
-  const handlChanges = (e) => {
-    setForm({ ...Form, [e.target.name]: e.target.value });
-  };
-
-  // const [passwordLogin, setPasswordLogin] = useState("");
-  const [err, seterr] = useState("");
   const [errInpemail, seterrInpemail] = useState(false);
   const [errInppass, seterrInppass] = useState(false);
-
   const [showPassword, setShowPassword] = useState(false);
-  const [msgforsuccess, setMsgforsuccess] = useState(false);
-  const [succesOrFAIL, setsuccesOrFAIL] = useState("");
   const [msg, setmsg] = useState(false);
   const [ErrForImg, setErrForImg] = useState(false);
+  const [succesOrFAIL, setsuccesOrFAIL] = useState("");
+  const [msgforsuccess, setMsgforsuccess] = useState(false);
+  
+  const isOpen = () => setChangePass(true);
+  const popUpchangPass = (data) => setChangePass(data);
+  const handlChanges = (e) => setForm({ ...Form, [e.target.name]: e.target.value });
   const handleClickShowPassword = () => setShowPassword((show) => !show);
+  const handleMouseDownPassword = (event) => event.preventDefault();
 
-  const handleMouseDownPassword = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
-  };
+    setmsg(false);
+    seterrInppass(false);
+    seterrInpemail(false);
 
-  //to send token to home page
+    if (!Form.email) {
+      seterrInpemail(true);
+    }
+    if (!Form.password) {
+      seterrInppass(true);
+    }
 
-  // const [city, setCity] = useState("");
-  // const handleSubmit = async (event) => {
-  //   event.preventDefault();
-  //   setmsg(false);
-  //   seterrInppass(false);
-  //   seterrInpemail(false);
-  //   try {
-  //     await axios
-  //       .post(`${LoginApi}`, Form, {
-  //         headers: {
-  //           "Content-Type": "application/json",
-  //           "Accept-Language": "ar-EG",
-  //         },
-  //       })
-  //       .then((response) => {
-  //         console.log("response", response);
-  //         const res = response.data;
-  //         if (res.succeeded) {
-  //           setmsg(true);
-  //           setMsgforsuccess(false);
-  //           setsuccesOrFAIL("تم التسجيل بنجاح");
-  //           const token = res.data.token;
-  //           // console.log(response.data.data.token);
-  //           const userId = res.data.userId; // Capture userId value
-  //           localStorage.setItem("userId", userId);
-
-  //           cookies.set("Cookie", token);
-  //           // Redirect to home page with token
-  //           // navigate("/home", { state: { token } });
-
-  //           setErrForImg(true);
-  //           // setInterval(() => {
-  //           //   window.location.pathname = "/HomePage";
-  //           // }, 1000);
-  //         } else {
-  //           setmsg(true);
-  //           if (response.data.data == null) {
-  //             setsuccesOrFAIL(response.data.message);
-  //           } else if (Form.email == "" && Form.password == "") {
-  //             setsuccesOrFAIL(response.data.data[0] + response.data.data[1]);
-  //             seterrInppass(true);
-  //             seterrInpemail(true);
-  //           } else if (Form.email == "" && Form.password !== "") {
-  //             setsuccesOrFAIL(response.data.data[0]);
-  //             seterrInpemail(true);
-  //           } else if (Form.password == "" && Form.email !== "") {
-  //             setsuccesOrFAIL(response.data.data[0]);
-  //             seterrInppass(true);
-  //           }
-
-  //           setMsgforsuccess(false);
-  //         }
-  //       });
-  //   } catch (err) {
-  //     console.log(err);
-
-  //     if (response.data.data == null) {
-  //       console.log("helll");
-  //       setsuccesOrFAIL(response.data.message);
-  //     }
-  //     setsuccesOrFAIL("حدث خطا خارجي");
-  //   }
-  // };
-  const navigate = useNavigate();
-
-const handleSubmit = async (event) => {
-  event.preventDefault();
-  setmsg(false);
-  seterrInppass(false);
-  seterrInpemail(false);
-
-  try {
-    const response = await axios.post(`${LoginApi}`, Form, {
-      headers: {
-        "Content-Type": "application/json",
-        "Accept-Language": "ar-EG",
-      },
-    });
-
-    const res = response.data;
-
-    if (res.succeeded) {
+    if (!Form.email || !Form.password) {
+      setsuccesOrFAIL("يرجى ملء جميع الحقول");
       setmsg(true);
-      setMsgforsuccess(false);
-      setsuccesOrFAIL("تم تسجيل الدخول بنجاح");
+      return;
+    }
 
-      const token = res.data.token;
-      const userId = res.data.userId;
+    try {
+      const response = await axios.post(`${LoginApi}`, Form, {
+        headers: {
+          "Content-Type": "application/json",
+          "Accept-Language": "ar-EG",
+        },
+      });
 
-      localStorage.setItem("userId", userId);
-      cookies.set("Cookie", token);
+      const res = response.data;
 
-      setErrForImg(true);
+      if (res.succeeded) {
+        setmsg(true);
+        setsuccesOrFAIL("تم تسجيل الدخول بنجاح");
+        const token = res.data.token;
+        const userId = res.data.userId;
 
-      // ✅ Redirect to homepage
-      navigate("/HomePage");
-    } else {
-      setmsg(true);
-      setMsgforsuccess(false);
+        localStorage.setItem("userId", userId);
+        cookies.set("Cookie", token);
 
-      if (!Form.email && !Form.password) {
-        setsuccesOrFAIL(res.message || "ادخل البريد وكلمة المرور");
-        seterrInpemail(true);
-        seterrInppass(true);
-      } else if (!Form.email) {
-        setsuccesOrFAIL("ادخل البريد الإلكتروني");
-        seterrInpemail(true);
-      } else if (!Form.password) {
-        setsuccesOrFAIL("ادخل كلمة المرور");
-        seterrInppass(true);
+        navigate("/HomePage");
       } else {
+        setmsg(true);
         setsuccesOrFAIL(res.message || "فشل تسجيل الدخول");
       }
-    }
-  } catch (err) {
-    console.log(err);
-    setmsg(true);
-
-    if (err.response?.data?.message) {
-      setsuccesOrFAIL(err.response.data.message);
-    } else {
+    } catch (err) {
+      console.log(err);
+      setmsg(true);
       setsuccesOrFAIL("حدث خطأ غير متوقع");
     }
-  }
-};
-
-  const [stopAnim, setstopAnim] = useState(false);
-  useEffect(() => {
-    setstopAnim(true);
-  });
+  };
 
   return (
     <>
@@ -225,424 +120,408 @@ const handleSubmit = async (event) => {
           setmsg={setmsg}
         />
       )}
-      {msgforsuccess ? (
+      
+      {msgforsuccess && (
         <SuccessOrFailMsg
           succesOrFAIL={succesOrFAIL}
           ErrForImg={ErrForImg}
           setmsg={setmsg}
         />
-      ) : (
-        ""
       )}
+      
       {changePass && <ChangePassword popUpchangPass={popUpchangPass} />}
-      <Grid
-        container
-        component="main"
-        sx={{
-          height: { md: "100vh", xl: "130vh" },
-          overflowX: "hidden",
-          flexWrap: "nowrap",
-          flexDirection: { xs: "column", sm: "row" },
-        }}
-      >
+      
+      <Container maxWidth={false} disableGutters sx={{ height: '100vh', overflow: 'hidden' }}>
         <Grid
-          component={motion.div}
-          initial={{ left: -840 }}
-          animate={{ left: 0 }}
-          transition={{ duration: 1.2 }}
-          item
-          xs={false}
-          sm={4}
-          md={4}
+          container
+          component={Paper}
+          elevation={6}
           sx={{
-            backgroundImage: `url(${LoginImage})`,
-            backgroundRepeat: "no-repeat",
-            position: "relative",
-            backgroundPosition: { xs: "center", md: "-300px" },
-            backgroundSize: "cover",
-            zIndex: 11,
+            height: '100%',
+            borderRadius: 0,
+            overflow: 'hidden',
           }}
         >
-          <Box
+          {/* Left Side - Image Panel */}
+          <Grid
+            component={motion.div}
+            initial={{ x: -100, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            transition={{ duration: 0.8 }}
+            item
+            xs={false}
+            sm={5}
+            md={4}
             sx={{
-              height: "100%",
-              width: "100%",
-              backgroundColor: "rgb(0 0 0 / 32%)",
+              position: 'relative',
+              backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.6)), url(${LoginImage})`,
+              backgroundRepeat: 'no-repeat',
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              display: { xs: 'none', sm: 'block' },
             }}
           >
             <Box
               sx={{
-                height: "100%",
-                display: "flex",
-                justifyContent: "center",
-                flexDirection: "column",
-                alignItems: "center",
-                gap: { xs: 8, md: 8, xl: 10 },
-                padding: { xs: "50px 0", md: "30px 0", xl: "0" },
+                height: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
+                alignItems: 'center',
+                padding: { sm: 3, md: 5 },
+                textAlign: 'center',
               }}
             >
-              <Typography
-                component="h1"
-                variant="h1"
-                sx={{
-                  color: "#fff",
-                  fontFamily: "Inter",
-                  fontSize: { xs: "20px", md: "30px", xl: "50px" },
-                  fontStyle: "normal",
-                  fontWeight: "700",
-                  lineHeight: "normal",
-                  textTransform: "capitalize",
-                }}
+              <motion.div
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.3, duration: 0.8 }}
               >
-                مرحبا بك مجددا
-              </Typography>
-
-              <Typography
-                component="h4"
-                variant="h4"
-                sx={{
-                  color: "rgba(255, 255, 255, 0.75)",
-                  fontFamily: "Rubik",
-                  fontSize: { xs: "15px", md: "20px", xl: "25px" },
-                  fontStyle: "normal",
-                  fontWeight: "700",
-                  lineHeight: 2,
-                  textTransform: "capitalize",
-                  textAlign: "center",
-                }}
-              >
-                أدخل بياناتك في حالة كنت <br />
-                مستخدم للموقع بالفعل
-              </Typography>
-
-              <Box
-                sx={{
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                }}
-              >
-                <Divider
-                  sx={{
-                    backgroundColor: "#fff",
-                    width: { xs: 50, md: 167 },
-                    height: -1,
-                    marginLeft: 2,
-                  }}
-                />
                 <Typography
-                  component="h4"
-                  variant="h4"
+                  variant="h3"
                   sx={{
-                    color: "#fff",
-                    fontFamily: "Inter",
-                    fontSize: { xs: "15px", md: "25px" },
-                    fontStyle: "normal",
-                    fontWeight: "400",
-                    lineHeight: "normal",
-                    textTransform: "capitalize",
+                    color: '#fff',
+                    fontWeight: 700,
+                    mb: 4,
+                    fontSize: { sm: '2rem', md: '2.5rem' },
+                    textShadow: '1px 1px 3px rgba(0,0,0,0.3)',
                   }}
                 >
-                  أو
+                  مرحبا بك مجددا
                 </Typography>
-                <Divider
-                  sx={{
-                    backgroundColor: "#fff",
-                    width: { xs: 50, md: 167 },
-                    height: -1,
-                    marginRight: 2,
-                  }}
-                />
-              </Box>
-              <Button
-                variant="outlined"
-                sx={{
-                  borderColor: "#53FF98",
-                  borderRadius: 100,
-                  width: { xs: 134, md: 200, xl: 250 },
-                  height: { xs: 45, md: 60, xl: 85 },
+              </motion.div>
 
-                  fontFamily: "Inter",
-                  fontSize: { xs: 12, md: "20px", xl: "25px" },
-                  fontStyle: "normal",
-                  fontWeight: "500",
-                  lineHeight: "normal",
-                  textTransform: "capitalize",
-                  marginBottom: { xs: "100px", md: "0" },
-                }}
+              <motion.div
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.5, duration: 0.8 }}
               >
-                <NavLink
-                  to={"/register"}
-                  style={{
-                    textDecoration: "none",
-                    color: "#D3D3D3",
+                <Typography
+                  variant="h6"
+                  sx={{
+                    color: 'rgba(255, 255, 255, 0.85)',
+                    fontWeight: 500,
+                    mb: 6,
+                    lineHeight: 1.8,
+                  }}
+                >
+                  أدخل بياناتك في حالة كنت
+                  <br />
+                  مستخدم للموقع بالفعل
+                </Typography>
+              </motion.div>
+
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 6, width: '80%' }}>
+                <Divider sx={{ flexGrow: 1, bgcolor: 'rgba(255,255,255,0.5)' }} />
+                <Typography sx={{ mx: 2, color: '#fff' }}>أو</Typography>
+                <Divider sx={{ flexGrow: 1, bgcolor: 'rgba(255,255,255,0.5)' }} />
+              </Box>
+
+              <motion.div
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.7, duration: 0.8 }}
+              >
+                <Button
+                  component={NavLink}
+                  to="/register"
+                  variant="outlined"
+                  size="large"
+                  sx={{
+                    borderColor: '#53FF98',
+                    color: '#fff',
+                    borderRadius: 8,
+                    px: 4,
+                    py: 1.5,
+                    fontSize: '1rem',
+                    fontWeight: 500,
+                    '&:hover': {
+                      borderColor: '#47e087', 
+                      backgroundColor: 'rgba(83, 255, 152, 0.1)',
+                    },
+                    transition: 'all 0.3s ease',
                   }}
                 >
                   انشاء حساب جديد
-                </NavLink>
-              </Button>
+                </Button>
+              </motion.div>
             </Box>
-          </Box>
-        </Grid>
+          </Grid>
 
-        <Grid
-          item
-          xs={12}
-          sm={8}
-          md={8}
-          elevation={6}
-          square
-          sx={{
-            background: { xs: "white", sm: "transparent" },
-            marginTop: { xs: "-50px", sm: "0" },
-            borderTopLeftRadius: { xs: "50px", sm: "0" },
-            borderTopRightRadius: { xs: "50px", sm: "0" },
-            position: "relative",
-            zIndex: "111",
-          }}
-        >
-          <Box
+          {/* Right Side - Login Form */}
+          <Grid
+            item
+            xs={12}
+            sm={7}
+            md={8}
+            component={motion.div}
+            initial={{ x: 100, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            transition={{ duration: 0.8 }}
             sx={{
-              my: { xs: 4, md: 2, xl: 8 },
-              mx: { xs: 2, md: 4 },
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              p: { xs: 3, sm: 6, md: 8 },
+              bgcolor: '#f9f9f9',
             }}
           >
-            <Typography
-              component="h1"
-              variant="h3"
+            <Paper
+              elevation={0}
               sx={{
-                color: "#888",
-
-                fontFamily: "Inter",
-                fontSize: { xs: "18px", md: "25px", xl: "50px" },
-                fontStyle: "normal",
-                fontWeight: "600",
-                lineHeight: "normal",
-                textTransform: "capitalize",
+                p: { xs: 3, sm: 4, md: 5 },
+                width: '100%',
+                maxWidth: 650,
+                
+           
+                borderRadius: 3,
+                bgcolor: '#fff',
+                boxShadow: '0px 8px 25px rgba(17, 18, 22, 0.05)',
               }}
             >
-              تسجيل الدخول
-            </Typography>
-            <Box
-              sx={{
-                my: { md: 0, xl: 8 },
-                mx: { md: 4 },
-                display: "flex",
-                justifyContent: "space-around",
-                alignItems: "center",
-              }}
-            >
-              {/* <img src={instgram} alt="" /> */}
-              <img src={google} alt="" />
-              {/* <img src={facebook} alt="" /> */}
-            </Box>
-
-            <Typography
-              component="h3"
-              variant="h5"
-              sx={{
-                color: "#939393",
-                fontFamily: "Inter",
-                fontSize: { xs: "12px", md: "15px", xl: "20px" },
-                fontStyle: "normal",
-                fontWeight: "600",
-                lineHeight: "normal",
-                textTransform: "capitalize",
-              }}
-            >
-              او قم بإستخدام حسابك
-            </Typography>
-
-            <Box
-              component="form"
-              noValidate
-              onSubmit={handleSubmit}
-              sx={{
-                mt: 5,
-                display: "inline-flex",
-                flexDirection: "column",
-                alignItems: "flex-start",
-                gap: { xs: 5, md: 3, xl: 5 },
-                width: { xs: 300, md: 550, xl: 620 },
-              }}
-            >
-              <FormControl
-                // variant="outlined"
-                fullWidth
-              >
-                <TextField
-                  fullWidth
-                  id="email"
-                  label="الايميل"
-                  name="email"
-                  value={Form.email}
-                  onChange={handlChanges}
-                  sx={{
-                    "& .MuiInputBase-root": {
-                      height: { xs: 55, md: 55, xl: 95 },
-                      borderRadius: { xs: 4, md: 4, xl: 8 },
-                    },
-                    "& .MuiInputBase-input": {
-                      padding: 3,
-                      fontSize: { xs: 12, md: 15, xl: 25 },
-                      paddingLeft: 0,
-                    },
-                    "& .MuiOutlinedInput-root": {
-                      "& > fieldset": errInpemail && { borderColor: "red" },
-                    },
-                  }}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <IconButton aria-label="toggle">
-                          <img src={email} alt="email" />
-                        </IconButton>
-                      </InputAdornment>
-                    ),
-                  }}
-                />
-              </FormControl>
-
-              <FormControl
-                variant="outlined"
-                fullWidth
-                sx={{
-                  "& .MuiOutlinedInput-root": {
-                    "& > fieldset": errInppass && { borderColor: "red" },
-                  },
-                }}
-              >
-                <OutlinedInput
-                  sx={{
-                    "& .MuiInputBase-input": {
-                      padding: 3,
-                      fontSize: { xs: 12, md: 15, xl: 25 },
-                    },
-                    "& .MuiFormLabel-root": {
-                      fontSize: { xs: 12, md: 15, xl: 25 },
-                      color: "#000",
-                      marginLeft: -1,
-                    },
-
-                    height: { xs: 55, md: 55, xl: 95 },
-                    borderRadius: { xs: 4, md: 4, xl: 8 },
-                    padding: 2,
-                  }}
-                  id="outlined-adornment-password"
-                  type={showPassword ? "text" : "Password"}
-                  startAdornment={
-                    <IconButton aria-label="toggle" edge="end">
-                      <img src={password} alt="password" />
-                    </IconButton>
-                  }
-                  endAdornment={
-                    <InputAdornment position="start">
-                      <IconButton
-                        aria-label="toggle password visibility"
-                        onClick={handleClickShowPassword}
-                        onMouseDown={handleMouseDownPassword}
-                        edge="end"
-                      >
-                        {showPassword ? <VisibilityOff /> : <Visibility />}
-                      </IconButton>
-                    </InputAdornment>
-                  }
-                  label="Password"
-                  inputProps={{ minLength: 8 }}
-                  name="password"
-                  value={Form.password}
-                  onChange={handlChanges}
-                />
-                <InputLabel htmlFor="outlined-adornment-password">
-                  كلمة المرور
-                </InputLabel>
-              </FormControl>
-
-              <FormControlLabel
-                sx={{ marginTop: { md: "0px" }, marginBottom: { md: "-25px" } }}
-                control={
-                  <Checkbox
-                    name="rememberMe"
-                    checked={Form.rememberMe}
-                    onChange={(e) =>
-                      setForm({ ...Form, rememberMe: e.target.checked })
-                    }
-                    color="primary"
-                  />
-                }
-                label="تذكرنى"
-              />
-
-
               <Box
-                // transition={{duration:.5}}
                 sx={{
-                  width: "100%",
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  mb: 4,
                 }}
               >
-                <Button
-                  variant="contained"
-                  component={motion.button}
+                <Typography
+                  component="h1"
+                  variant="h4"
                   sx={{
-                    width: { xs: 114, md: 180, xl: 200 },
-                    height: { xs: 45, md: 50, xl: 60 },
-                    borderRadius: 100,
-                    background: "#408CFF",
-                    color: "#FFF",
-                    textAlign: "center",
-                    fontFamily: "Inter",
-                    fontSize: { xs: 10, md: 15, xl: 20 },
-                    fontStyle: "normal",
-                    fontWeight: 700,
-                    lineHeight: "normal",
-                    textTransform: "capitalize",
-                    zIndex: 13,
+                    color: '#333',
+                    fontWeight: 600,
+                    mb: 3,
+                    fontSize: { xs: '1.75rem', md: '2rem' },
                   }}
-                  initial={{ x: 600, y: 100, backgroundColor: "#5FE164" }}
-                  animate={{ x: 0, y: 0, backgroundColor: "#408CFF" }}
                 >
                   تسجيل الدخول
-                </Button>
+                </Typography>
+                
+                <Typography
+                  variant="body1"
+                  sx={{
+                    color: '#666',
+                    mb: 3,
+                    textAlign: 'center',
+                  }}
+                >
+                  قم بتسجيل الدخول للوصول إلى حسابك
+                </Typography>
               </Box>
-            </Box>
-          </Box>
 
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "center",
-              marginTop: { xs: 10, md: 5, xl: 10 },
-              marginBottom: 3,
-            }}
-          >
-            <Typography
-              onClick={isOpen}
-              component="h3"
-              variant="h5"
-              sx={{
-                color: "blue",
-                textAlign: "center",
-                fontFamily: "Inter",
-                fontSize: "20px",
-                fontStyle: "normal",
-                fontWeight: "400",
-                lineHeight: "normal",
-                textTransform: "capitalize",
-                textDecoration: "underline",
-                cursor: "pointer",
-              }}
-            >
-              هل نسيت كلمه المرور الخاصة بك؟
-            </Typography>
-          </Box>
+              <Box
+                component="form"
+                onSubmit={handleSubmit}
+                sx={{ width: '100%' }}
+              >
+                <FormControl fullWidth sx={{ mb: 3 }}>
+                  <TextField
+                    required
+                    fullWidth
+                    id="email"
+                    label="البريد الإلكتروني"
+                    name="email"
+                    value={Form.email}
+                    onChange={handlChanges}
+                    error={errInpemail}
+                    helperText={errInpemail ? "البريد الإلكتروني مطلوب" : ""}
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <EmailIcon sx={{ color: "#408CFF" }} />
+                        </InputAdornment>
+                      ),
+                    }}
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        borderRadius: 2,
+                        height: { xs: 40, md: 50, xl: 70 },
+                        
+                        '&:hover fieldset': {
+                          borderColor: '#408CFF',
+                        },
+                        '&.Mui-focused fieldset': {
+                          borderColor: '#408CFF',
+                          
+                        },
+                      },
+                      '& .MuiInputLabel-root.Mui-focused': {
+                        color: '#408CFF',
+                      },
+                    }}
+                  />
+                </FormControl>
+
+                <FormControl fullWidth sx={{ mb: 2 }} variant="outlined">
+                  <InputLabel 
+                    htmlFor="password"
+                    error={errInppass}
+                    sx={{
+                      '&.Mui-focused': {
+                        color: '#408CFF',
+                      },
+                    }}
+                  >
+                    كلمة المرور
+                  </InputLabel>
+                  <OutlinedInput
+                    id="password"
+                    name="password"
+                    type={showPassword ? 'text' : 'password'}
+                    value={Form.password}
+                    onChange={handlChanges}
+                    error={errInppass}
+                    startAdornment={
+                      <InputAdornment position="start">
+                        <LockIcon sx={{ color: "#408CFF" }} />
+                      </InputAdornment>
+                    }
+                    endAdornment={
+                      <InputAdornment position="end">
+                        <IconButton
+                          aria-label="toggle password visibility"
+                          onClick={handleClickShowPassword}
+                          onMouseDown={handleMouseDownPassword}
+                          edge="end"
+                        >
+                          {showPassword ? <VisibilityOff /> : <Visibility />}
+                        </IconButton>
+                      </InputAdornment>
+                    }
+                    sx={{
+                      borderRadius: 2,
+                       height: { xs: 40, md: 50, xl: 70 },
+                      '&:hover .MuiOutlinedInput-notchedOutline': {
+                        borderColor: '#408CFF',
+                      },
+                      '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                        borderColor: '#408CFF',
+                      },
+                    }}
+                  />
+                  {errInppass && (
+                    <Typography variant="caption" color="error" sx={{ mt: 0.5, mr: 1.5 }}>
+                      كلمة المرور مطلوبة
+                    </Typography>
+                  )}
+                </FormControl>
+
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3, alignItems: 'center' }}>
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        name="rememberMe"
+                        checked={Form.rememberMe}
+                        onChange={(e) => setForm({ ...Form, rememberMe: e.target.checked })}
+                        color="primary"
+                        sx={{ 
+                          color: '#408CFF',
+                          '&.Mui-checked': {
+                            color: '#408CFF',
+                          }
+                        }}
+                      />
+                    }
+                    label="تذكرني"
+                  />
+                  
+                  <Typography
+                    onClick={isOpen}
+                    variant="body2"
+                    sx={{
+                      color: '#408CFF',
+                      cursor: 'pointer',
+                      textDecoration: 'none',
+                      '&:hover': {
+                        textDecoration: 'underline',
+                      },
+                      transition: 'all 0.2s',
+                    }}
+                  >
+                    نسيت كلمة المرور؟
+                  </Typography>
+                </Box>
+
+                {/* <Button
+                  type="submit"
+                  width="100%"
+                  variant="contained"
+                  size="large"
+                  sx={{
+                    mt: 2,
+                    mb: 3,
+                    py: 1.5,
+                    borderRadius: 8,
+                    backgroundColor: '#408CFF',
+                    fontWeight: 600,
+                    fontSize: '1rem',
+                    boxShadow: '0 4px 10px rgba(64, 140, 255, 0.3)',
+                    '&:hover': {
+                      backgroundColor: '#3575d9',
+                      boxShadow: '0 6px 15px rgba(64, 140, 255, 0.4)',
+                    },
+                    transition: 'all 0.3s ease',
+                  }}
+                >
+                  تسجيل الدخول
+                </Button> */}
+                <Button
+  type="submit"
+  width="auto" // أو يمكنك تحديد عرض معين إذا أردت
+  variant="contained"
+  size="large" // تم تقليص الحجم
+  sx={{
+    mt: 2,
+    mb: 3,
+    py: 1,
+    borderRadius: 8,
+    backgroundColor: '#408CFF',
+    fontWeight: 600,
+    fontSize: '1rem', // يمكنك تعديل الحجم هنا
+    boxShadow: '0 4px 10px rgba(64, 140, 255, 0.3)',
+    '&:hover': {
+      backgroundColor: '#3575d9',
+      boxShadow: '0 6px 15px rgba(64, 140, 255, 0.4)',
+    },
+    transition: 'all 0.3s ease',
+    display: 'flex', // إضافة خصائص التوسيط
+    justifyContent: 'center',
+    alignItems: 'center',
+    margin: '0 auto', // لضمان أن البوتون في المنتصف
+  }}
+>
+  تسجيل الدخول
+</Button>
+
+              </Box>
+
+              <Box sx={{ display: { xs: 'flex', sm: 'none' }, justifyContent: 'center', mt: 3 }}>
+                <Typography sx={{ color: '#666', mr: 1 }}>
+                  ليس لديك حساب؟
+                </Typography>
+                <Typography
+                  component={NavLink}
+                  to="/register"
+                  sx={{
+                    color: '#408CFF',
+                    textDecoration: 'none',
+                    fontWeight: 600,
+                    '&:hover': {
+                      textDecoration: 'underline',
+                    },
+                  }}
+                >
+                  إنشاء حساب جديد
+                </Typography>
+              </Box>
+            </Paper>
+          </Grid>
         </Grid>
-      </Grid>
+      </Container>
     </>
   );
 }
