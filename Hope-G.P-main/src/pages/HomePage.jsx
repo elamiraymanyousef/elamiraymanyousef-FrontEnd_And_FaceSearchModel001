@@ -38,7 +38,7 @@ function HomePage() {
   // Function to navigate to user profile
   const navigateToUserProfile = (userId) => {
     // Navigate to the user profile page with userId parameter
-    history.push(`/profile/${userId}`); 
+    history.push(`/profile/${userId}`);
   };
   //fetch all data state
   const [apiAllData, setApiAllData] = useState([]);
@@ -84,7 +84,7 @@ function HomePage() {
   const handleFetchData = async (apiEndpoint, pageNumber) => {
     try {
       const response = await axios.get(
-        `${apiEndpoint}&PageNumber=${pageNumber||1}&pageSize=10`,
+        `${apiEndpoint}&PageNumber=${pageNumber || 1}&pageSize=100`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -93,7 +93,7 @@ function HomePage() {
       );
       const responseData = response.data.data.items;
       console.log(response.data.data.items);
-      
+
       if (responseData.length === 0) {
         setMoreDataAvailable(false);
       } else {
@@ -102,7 +102,7 @@ function HomePage() {
           // Use a Set to avoid duplicates
           const uniqueData = new Set([...prevData, ...responseData]);
           console.log(Array.from(uniqueData));
-          
+
           return Array.from(uniqueData);
         });
       }
@@ -138,7 +138,7 @@ function HomePage() {
   //   // Fetch initial data based on the selected category
   //   if (selectedCategory) {
   //     console.log("137",selectedCategory);
-      
+
   //     const apiEndpoint = getCategoryEndpoint(selectedCategory); // Include PageNumber in the API endpoint
   //     handleFetchData(apiEndpoint, PageNumber);
   //   }
@@ -151,15 +151,15 @@ function HomePage() {
     if (window.innerWidth <= 768) {
       setIsSearchVisible(true);
     }
-  
+
     if (selectedCategory) {
       const apiEndpoint = getCategoryEndpoint(selectedCategory);
       handleFetchData(apiEndpoint, PageNumber);
     }
   }, [selectedCategory, PageNumber]);
-  
 
-  
+
+
   console.log(PageNumber);
   const getCategoryEndpoint = (category) => {
     // Map category to corresponding API endpoint
@@ -173,8 +173,8 @@ function HomePage() {
     return categoryEndpoints[category] || "";
   };
   const handleCategorySelect = (event, category) => {
-    console.log("category = ",category);
-    
+    console.log("category = ", category);
+
 
     setIsOpen(false);
     setApiAllData([]); // Reset apiAllData array
@@ -199,9 +199,11 @@ function HomePage() {
     <>
       <Dialog
         open={isPopupOpen}
-        onClose={() => setIsPopupOpen(false)}
-        disableBackdropClick
-        disableEscapeKeyDown
+        onClose={(event, reason) => {
+          if (reason !== "backdropClick" && reason !== "escapeKeyDown") {
+            setIsPopupOpen(false);
+          }
+        }}
         PaperProps={{
           sx: {
             borderRadius: 8,
@@ -209,9 +211,10 @@ function HomePage() {
             width: { xs: "95%", md: "60%" },
             margin: "0 10px",
             maxHeight: "465px",
-          }, // Apply borderRadius and remove padding
+          },
         }}
       >
+
         <DialogTitle sx={{ padding: "0" }}>
           <Box
             onClick={() => setIsPopupOpen(false)}
@@ -378,9 +381,8 @@ function HomePage() {
                   Find
                   <span
                     style={{
-                      background:
-                        "-webkit-linear-gradient(45deg, #A1C4FD 100%, #C2E9FB 100%)",
-                      webkitBackgroundClip: "text",
+                      background: "linear-gradient(45deg, #A1C4FD 100%, #C2E9FB 100%)",
+                      WebkitBackgroundClip: "text",
                       WebkitTextFillColor: "transparent",
                       marginLeft: "10px",
                       fontFamily: "defaultFont",
@@ -459,7 +461,6 @@ function HomePage() {
                 border: "none",
                 fontSize: { md: "16px", xl: "20px" },
                 fontWeight: "bold",
-
                 cursor: "pointer",
                 "&:hover": {
                   backgroundColor: "transparent",
@@ -467,18 +468,18 @@ function HomePage() {
               }}
             >
               انشاء منشور جديد
-              <IconButton>
-                <Box
-                  component="img"
-                  src={CreatePostIcon}
-                  alt="CreatePostIcon"
-                  sx={{
-                    width: { md: "30px", xl: "50px" },
-                    height: { md: "30px", xl: "50px" },
-                  }}
-                ></Box>
-              </IconButton>
+              <Box
+                component="img"
+                src={CreatePostIcon}
+                alt="CreatePostIcon"
+                sx={{
+                  width: { md: "30px", xl: "50px" },
+                  height: { md: "30px", xl: "50px" },
+                  marginLeft: "10px",
+                }}
+              />
             </Button>
+
           </Link>
         </Box>
         <NavigationBar
@@ -497,9 +498,9 @@ function HomePage() {
         }}
       >
         {apiAllData &&
-          apiAllData.map((postData) => (
+          apiAllData.map((postData,index) => (
             <Post
-              key={postData.id}
+            key={`${postData.id}-${index}`}
               data={postData}
               onClick={() => handlePostClick(postData)}
               navigateToUserProfile={navigateToUserProfile}

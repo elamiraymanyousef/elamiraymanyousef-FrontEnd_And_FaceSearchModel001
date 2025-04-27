@@ -73,104 +73,194 @@ const MainCreatePost = () => {
     setType(Type);
   };
 
+  // const handlePostSubmit = async (e) => {
+  //   e.preventDefault();
+
+  //   setReserr("");
+  //   setmsg(false);
+
+  //   let userData;
+  //   if (checkLostPeapleOrThing) {
+  //     userData = {
+  //       UserId: "",
+  //       PhoneNumber,
+  //       City,
+  //       IsSearcher,
+  //       MissigDate,
+  //       Town,
+  //       Name,
+  //       Condition,
+  //       Gendre,
+  //       Age,
+  //       Description,
+  //       ImageFile,
+  //     };
+  //   } else {
+  //     userData = {
+  //       UserId: "",
+  //       PhoneNumber,
+  //       City,
+  //       IsSearcher,
+  //       MissigDate,
+  //       Town,
+  //       Type,
+  //       Description,
+  //       ImageFile,
+  //     };
+  //   }
+  //   try {
+  //     let formData;
+  //     formData = new FormData();
+  //     for (const key in userData) {
+  //       // formData.append(key, userData[key]);
+
+  //       if (key == "ImageFile") {
+  //         if (userData[key] !== "") {
+  //           formData.append(key, userData[key], userData[key].name);
+  //         }
+  //       } else {
+  //         formData.append(key, userData[key]);
+  //       }
+  //     }
+  //     await axios
+  //       .post(
+  //         `${checkLostPeapleOrThing ? AddPostPeople : AddPostThings}`,
+  //         formData,
+  //         {
+  //           headers: {
+  //             "Accept-Language": "ar-EG",
+  //             Authorization: "Bearer " + Token,
+  //           },
+  //         }
+  //       )
+  //       .then((response) => {
+  //         console.log(response);
+  //         if (response.data.isSuccess) {
+  //           setmsg(true);
+  //           setsuccesOrFAIL("تم عمل المنشور بنجاح ");
+  //           setErrForImg(true);
+
+  //           setInterval(() => {
+  //             window.location.pathname = "/HomePage";
+  //           }, 1000);
+  //         } else {
+  //           setReserr(response.data.data[0]);
+  //         }
+  //       });
+  //   } catch (err) {
+  //     console.log("111", err);
+  //     if (
+  //       (City == "" ||
+  //         Town == "" ||
+  //         Gendre == "" ||
+  //         Condition == "" ||
+  //         Description == "") &&
+  //       checkLostPeapleOrThing
+  //     ) {
+  //       setmsg(true);
+  //       console.log("111");
+  //       setsuccesOrFAIL("ادخل جميع الحقول");
+  //     } else if (
+  //       (City == "" || Town == "" || Type == "" || Description == "") &&
+  //       checkLostPeapleOrThing == false
+  //     ) {
+  //       setmsg(true);
+  //       console.log("22");
+  //       setsuccesOrFAIL("ادخل جميع الحقول");
+  //     }
+  //   }
+  // };
+
   const handlePostSubmit = async (e) => {
     e.preventDefault();
-
+  
     setReserr("");
     setmsg(false);
-
-    let userData;
-    if (checkLostPeapleOrThing) {
-      userData = {
-        UserId: "",
-        PhoneNumber,
-        City,
-        IsSearcher,
-        MissigDate,
-        Town,
-        Name,
-        Condition,
-        Gendre,
-        Age,
-        Description,
-        ImageFile,
-      };
-    } else {
-      userData = {
-        UserId: "",
-        PhoneNumber,
-        City,
-        IsSearcher,
-        MissigDate,
-        Town,
-        Type,
-        Description,
-        ImageFile,
-      };
-    }
+  
     try {
-      let formData;
-      formData = new FormData();
-      for (const key in userData) {
-        // formData.append(key, userData[key]);
-
-        if (key == "ImageFile") {
-          if (userData[key] !== "") {
-            formData.append(key, userData[key], userData[key].name);
-          }
-        } else {
-          formData.append(key, userData[key]);
-        }
+      const formData = new FormData();
+  
+      formData.append("PhoneNumber", PhoneNumber);
+      formData.append("IncidentTime", new Date(MissigDate).toISOString());
+      formData.append("ReportType", IsSearcher ? 0 : 1);
+      formData.append("ReportSubjectType", checkLostPeapleOrThing ? 1 : 2);
+      formData.append("CenterId", Town);
+      formData.append("GovernmentId", City);
+  
+      if (checkLostPeapleOrThing) {
+        formData.append("PersonName", Name);
+        formData.append("Gender", Gendre);
+        formData.append("Age", Age);
+        formData.append("Description", Description);
+        formData.append("State", Condition);
+      } else {
+        formData.append("ThingType", Type);
+        formData.append("ThingDescription", Description);
+        formData.append("ThingState", 1);
       }
-      await axios
-        .post(
-          `${checkLostPeapleOrThing ? AddPostPeople : AddPostThings}`,
-          formData,
-          {
-            headers: {
-              "Accept-Language": "ar-EG",
-              Authorization: "Bearer " + Token,
-            },
-          }
-        )
-        .then((response) => {
-          console.log(response);
-          if (response.data.isSuccess) {
-            setmsg(true);
-            setsuccesOrFAIL("تم عمل المنشور بنجاح ");
-            setErrForImg(true);
-
-            setInterval(() => {
-              window.location.pathname = "/HomePage";
-            }, 1000);
-          } else {
-            setReserr(response.data.data[0]);
-          }
-        });
+  
+      if (ImageFile) {
+        formData.append("Image", ImageFile, ImageFile.name);
+      }
+  
+      const response = await axios.post(`${AddPostPeople}`, formData, {
+        headers: {
+          Authorization: `Bearer ${Token}`,
+          "Accept-Language": "ar-EG",
+        },
+      });
+  
+      console.log("Full API Response:", response);
+  
+      // Handle Success Case
+      if (response.data.succeeded) {
+        console.log("Post created successfully with ID:", response.data.data);
+        setmsg(true);
+        setsuccesOrFAIL("تم عمل المنشور بنجاح ✅");
+        setErrForImg(true);
+  
+        setTimeout(() => {
+          window.location.pathname = "/HomePage";
+        }, 1000);
+      } 
+      // Handle API returned Validation Errors
+      else if (response.data.errors) {
+        console.log("Validation Errors:", response.data.errors);
+        const firstErrorField = Object.keys(response.data.errors)[0];
+        const firstErrorMessage = response.data.errors[firstErrorField][0];
+        setReserr(firstErrorMessage);
+        setmsg(true);
+        setsuccesOrFAIL(firstErrorMessage);
+      }
+      // Any other unexpected case
+      else {
+        console.log("Unexpected Error Response:", response.data);
+        setReserr("حدث خطأ غير متوقع");
+        setmsg(true);
+        setsuccesOrFAIL("حدث خطأ غير متوقع ❗");
+      }
+  
     } catch (err) {
-      console.log("111", err);
-      if (
-        (City == "" ||
-          Town == "" ||
-          Gendre == "" ||
-          Condition == "" ||
-          Description == "") &&
-        checkLostPeapleOrThing
-      ) {
+      // Catching Network Errors or Axios Errors
+      console.error("Axios Network Error:", err);
+  
+      if (err.response && err.response.data && err.response.data.errors) {
+        const firstErrorField = Object.keys(err.response.data.errors)[0];
+        const firstErrorMessage = err.response.data.errors[firstErrorField][0];
+        console.log("Caught Validation Error:", firstErrorMessage);
+        setReserr(firstErrorMessage);
         setmsg(true);
-        console.log("111");
-        setsuccesOrFAIL("ادخل جميع الحقول");
-      } else if (
-        (City == "" || Town == "" || Type == "" || Description == "") &&
-        checkLostPeapleOrThing == false
-      ) {
+        setsuccesOrFAIL(firstErrorMessage);
+      } else {
+        console.log("Caught Unknown Error:", err);
+        setReserr("حدث خطأ أثناء الاتصال بالخادم");
         setmsg(true);
-        console.log("22");
-        setsuccesOrFAIL("ادخل جميع الحقول");
+        setsuccesOrFAIL("حدث خطأ أثناء الاتصال بالخادم ❗");
       }
     }
   };
-
+  
+  
   // console.log("v",PhoneNumber,City,IsSearcher,MissigDate,Town,Name,Condition,Gendre,Age,Description,imagePhoto)
   return (
     <>
@@ -311,7 +401,7 @@ const MainCreatePost = () => {
       </Box>
 
       <Box component="form" onSubmit={handlePostSubmit}>
-        <ComunicationDetails getData={getData} resErr={resErr} />
+        <ComunicationDetails getData={getData} resErr={resErr} /> 
         <ComunicationaboutLose
           getDataForLosePeople={getDataForLosePeople}
           getDataForthings={getDataForthings}

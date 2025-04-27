@@ -16,14 +16,14 @@ export const forgetPassword =
   "https://hope3221-001-site1.btempurl.com/api/Account/ChangePassword";
 
 export const AddPostPeople =
-  "https://hope3221-001-site1.btempurl.com/api/Posts/AddPostPeople";
+  "http://hopesystem.runasp.net/api/Reports";
 
 export const AddPostThings =
   "https://hope3221-001-site1.btempurl.com/api/Posts/AddPostThings";
 export const getAllCities =
   "https://hope3221-001-site1.btempurl.com/api/Account/GetAllCities";
 export const getAllTown =
-  "https://hope3221-001-site1.btempurl.com/api/Account/GetAllTownsByCityId?id=";
+  "http://hopesystem.runasp.net/api/Lookup/governments";
 export const GetProfile =
   "https://hope3221-001-site1.btempurl.com/api/Account/GetProfile";
 export const UpdateUserData =

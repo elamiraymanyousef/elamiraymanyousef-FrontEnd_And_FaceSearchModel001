@@ -11,7 +11,7 @@ const ComunicationaboutLose = ({getDataForLosePeople,getDataForthings,getcheckLo
    
    const handlecheckthingorpeple=(e)=>{
     if(e.target.value === "البلاغ عن مفقود")
-     { 
+     {  
      
     setcheckLostPeapleOrThing(true)
     }

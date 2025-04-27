@@ -1,7 +1,7 @@
 import { Box, FormControl, FormControlLabel, IconButton, InputAdornment, InputLabel, MenuItem, Radio, RadioGroup, Select, TextField, Typography } from '@mui/material'
 import React, { useEffect, useRef, useState } from 'react'
 import phone from "../../assets/creatPostImage/Phone.png"
-import Globe from "../../assets/creatPostImage/Globe.png"
+import Globe from "../../assets/creatPostImage/Globe.png" 
 import styled from '@emotion/styled'
 import dayjs from 'dayjs';
 import { DemoContainer, DemoItem } from '@mui/x-date-pickers/internals/demo';
@@ -14,7 +14,7 @@ import { StaticDatePicker } from '@mui/x-date-pickers/StaticDatePicker';
 import { DesktopTimePicker } from '@mui/x-date-pickers'
 import Cookie from "cookie-universal";
 import axios from 'axios'
-import { getAllCities, getAllTown } from '../../apiRequests/apiRequest'
+import { getAllCities, getAllTown ,getAllGovernments } from '../../apiRequests/apiRequest'
 const label = styled.select(({
     background:"red"
 }))
@@ -35,25 +35,25 @@ const [GetTown,setGetTown]=useState([])
 const [id,setid]=useState(1)
 const handlgetId=(id)=>{
   setid(id)
-  axios.get(`${getAllTown}${id}`,{
+  axios.get(`${getAllTown}/${id}/centers`,{
     headers:{
       
       "Authorization":"Bearer " +token
     }
   }).then((response)=>{
     setGetTown(response.data.data)
-    console.log(response)
+    console.log(response.data.data)
   })
   }
 useEffect(()=>{
   
-axios.get(`${getAllCities}`,{
+axios.get(`${getAllGovernments}`,{
   headers:{
     
     "Authorization":"Bearer " +token
   }
 }).then((response)=>{
-  setGetCity(response.data.data)
+  setGetCity(response.data)
 
 
 })
@@ -61,7 +61,19 @@ console.log("object",id)
 
 },[])
 
-
+// NEW: When city changes, fetch centers
+useEffect(() => {
+  if (city) { // make sure city is not empty
+    axios.get(`${getAllTown}/${city}/centers`, {
+      headers: {
+        Authorization: "Bearer " + token,
+      },
+    }).then((response) => {
+      setGetTown(response.data.data);
+      console.log("Centers loaded on page load or city change:", response.data.data);
+    });
+  } 
+}, [city]);  // <- depends on city
 // console.log(`${getAllTown}${id}`)
 // console.log(GetTown)
 
@@ -195,12 +207,19 @@ getData(PhoneNumber,city,IsSearcher,mixedValue,town)
               }}
                 >
                      
-              {
+              {/* {
                 getCity.map((item)=>{
                  return <MenuItem onClick={()=>handlgetId(item.id)} key={item.id} value={item.name}>{item.name}</MenuItem>
-                })
-              }
-               
+                }) 
+              } */}
+                {Array.isArray(getCity) &&
+                      getCity.map((item) => (
+                        <MenuItem 
+                          onClick={()=>handlgetId(item.id)}
+                          key={item.id} value={item.id}>
+                          {item.nameAr}
+                        </MenuItem>
+                      ))}
                 </Select>
             </FormControl>
       
@@ -255,13 +274,18 @@ getData(PhoneNumber,city,IsSearcher,mixedValue,town)
               }}
                 >
                      
-              
-                     {
+                     {Array.isArray(GetTown) &&
+                      GetTown.map((item) => (
+                        <MenuItem key={item.id} value={item.id}>
+                          {item.nameAr}
+                        </MenuItem>
+                      ))}
+                     {/* {
                 GetTown.map((item)=>{
                  return <MenuItem value={item.name}>{item.name}</MenuItem>
                
                 })
-              }
+              } */}
                 </Select>
             </FormControl>
       

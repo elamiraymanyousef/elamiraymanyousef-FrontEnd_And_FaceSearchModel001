@@ -35,7 +35,7 @@ import SuccessOrFailMsg from "../components/SuccessOrFailMsg";
 import { useNav } from "../context/EmailContext";
 
 // API Endpoints
-import { RegesterApi, getAllGovernments } from "../apiRequests/apiRequest";
+import { RegesterApi, getAllGovernments } from "../apiRequests/apiRequest"; 
 
 // Assets
 import LoginImage from "../assets/login-image.jpg";

@@ -24,7 +24,7 @@ import { HidePost, DeletePost } from "../../apiRequests/apiRequest";
 const Post = ({ data, onClick, navigateToUserProfile }) => {
   // Get role from sessionStorage
   const role = sessionStorage.getItem("role");
-  console.log("inputpost = ",data);
+  // console.log("inputpost = ",data);
   
   const [isHidden, setIsHidden] = useState(false);
   const [isPinnedMsg, setIsPinnedMsg] = useState(false);
