@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { 
   Box, 
   Button, 
@@ -16,7 +16,6 @@ import {
   Slide,
   Fade,
   Paper,
-  Input,
   LinearProgress
 } from '@mui/material';
 import { 
@@ -28,6 +27,7 @@ import {
   Person
 } from '@mui/icons-material';
 import { styled } from '@mui/system';
+import { useNavigate } from 'react-router-dom';
 
 const StyledPaper = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(4),
@@ -53,6 +53,13 @@ const FileInputArea = styled('div')(({ theme }) => ({
   }
 }));
 
+// حل مشكلة إخفاء input وجعله مرتبط بشكل صحيح بالمنطقة القابلة للنقر
+const HiddenInput = styled('input')({
+  display: 'none',
+});
+
+
+
 const FaceSearch = () => {
   const [image, setImage] = useState(null);
   const [preview, setPreview] = useState(null);
@@ -60,7 +67,11 @@ const FaceSearch = () => {
   const [loading, setLoading] = useState(false);
   const [noMatch, setNoMatch] = useState(false);
   const [openDialog, setOpenDialog] = useState(false);
-
+  
+  // إضافة مرجع للـ input المخفي
+  const fileInputRef = useRef(null);
+  
+  const navigate = useNavigate(); 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -68,6 +79,13 @@ const FaceSearch = () => {
       setPreview(URL.createObjectURL(file));
       setResults([]);
       setNoMatch(false);
+    }
+  };
+
+  // وظيفة جديدة تفتح مربع حوار اختيار الملفات
+  const handleFileAreaClick = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
     }
   };
 
@@ -89,7 +107,7 @@ const FaceSearch = () => {
       });
 
       const data = await response.json();
-
+      console.log(data);
       if (data.match_found) {
         setResults(data.matched_images);
         setOpenDialog(true);
@@ -141,9 +159,13 @@ const FaceSearch = () => {
           </Typography>
           
           <form onSubmit={handleSubmit}>
-            <FileInputArea style={{ 
-              backgroundColor: preview ? 'rgba(255, 255, 255, 0.05)' : 'transparent'
-            }}>
+            {/* تعديل طريقة رفع الملفات باستخدام Input مخفي ومرجع */}
+            <FileInputArea 
+              onClick={handleFileAreaClick}
+              style={{ 
+                backgroundColor: preview ? 'rgba(255, 255, 255, 0.05)' : 'transparent'
+              }}
+            >
               {preview ? (
                 <>
                   <Avatar
@@ -156,7 +178,10 @@ const FaceSearch = () => {
                     }}
                   />
                   <IconButton 
-                    onClick={handleClearImage}
+                    onClick={(e) => {
+                      e.stopPropagation(); // منع انتشار الحدث للعنصر الأب
+                      handleClearImage();
+                    }}
                     sx={{
                       position: 'absolute',
                       top: 8,
@@ -179,20 +204,14 @@ const FaceSearch = () => {
                   </Typography>
                 </>
               )}
-              <Input
+              
+              {/* استخدام عنصر input مخفي مع مرجع */}
+              <HiddenInput
                 type="file"
                 accept="image/*"
                 onChange={handleImageChange}
-                required
-                sx={{
-                  position: 'absolute',
-                  width: '100%',
-                  height: '100%',
-                  top: 0,
-                  left: 0,
-                  opacity: 0,
-                  cursor: 'pointer'
-                }}
+                ref={fileInputRef}
+                required={!image}
               />
             </FileInputArea>
 
@@ -283,7 +302,9 @@ const FaceSearch = () => {
             <Grid container spacing={3}>
               {results.map((result, index) => (
                 <Grid item xs={12} sm={6} key={index}>
-                  <Card sx={{ 
+                  <Card 
+                  onClick={() => navigate(`/post-details/${result.name}`)}
+                  sx={{ 
                     background: 'rgba(255, 255, 255, 0.1)',
                     borderRadius: '12px',
                     overflow: 'hidden',

@@ -8,7 +8,7 @@ import IconButton from "@mui/material/IconButton";
 import ClearIcon from "@mui/icons-material/Clear";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import { Box, CardContent } from "@mui/material";
-import { Typography ,Button } from "@mui/material";
+import { Typography, Button } from "@mui/material";
 
 // import PostedPerson from "../../assets/person.png";
 import shareIcon from "../../assets/shareicon.png";
@@ -25,12 +25,12 @@ const Post = ({ data, onClick, navigateToUserProfile }) => {
   // Get role from sessionStorage
   const role = sessionStorage.getItem("role");
   // console.log("inputpost = ",data);
-  
+
   const [isHidden, setIsHidden] = useState(false);
   const [isPinnedMsg, setIsPinnedMsg] = useState(false);
 
   // This will give you the current URL
-  const postId = data.id; 
+  const postId = data.id;
   const isPeople = data.isPeople;
   const cookies = Cookie();
   const token = cookies.get("Cookie");
@@ -114,6 +114,21 @@ const Post = ({ data, onClick, navigateToUserProfile }) => {
       console.error("Error deleting post:", error);
     }
   };
+  const getReportLabelAndColor = (data) => {
+    if (data.reportType === 0) {
+      if (data.missingPerson) return { label: "بلاغ عن مفقود شخص", color: "#2E74FD" }; // أزرق
+      if (data.missingThing) return { label: "بلاغ عن مفقود شيء", color: "#2E74FD" };
+      return { label: "بلاغ عن مفقود", color: "#2E74FD" };
+    } else {
+      if (data.missingPerson) return { label: "بلاغ عن إيجاد شخص", color: "#4CAF50" }; // أخضر
+      if (data.missingThing) return { label: "بلاغ عن إيجاد شيء", color: "#4CAF50" };
+      return { label: "بلاغ عن إيجاد", color: "#4CAF50" };
+    }
+  };
+  const { label, color } = getReportLabelAndColor(data);
+
+
+
 
   const renderCondition = () => {
     if (data.condition === "Losties") {
@@ -242,59 +257,67 @@ const Post = ({ data, onClick, navigateToUserProfile }) => {
             </Box>
           </Box>
         </CardContent> */}
-<Box
-    sx={{
-      width: "100%",
-      height: { xs: "200px", md: "250px" },
-      backgroundImage: `url(http://hopesystem.runasp.net/${data.missingPerson ? data.missingPerson.imagePath : data.missingThing?.imagePath})`,
-      backgroundSize: "cover",
-      backgroundPosition: "center",
-    }}
-  />
+        <Box
+          sx={{
+            width: "100%",
+            height: { xs: "200px", md: "250px" },
+            backgroundImage: `url(http://hopesystem.runasp.net/${data.missingPerson ? data.missingPerson.imagePath : data.missingThing?.imagePath})`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+          }}
+        />
 
-  <CardContent sx={{ padding: "20px" }}>
-    {/* اسم النوع */}
-    <Typography
-      variant="h6"
-      sx={{
-        fontWeight: "bold",
-        fontSize: { xs: "18px", md: "22px" },
-        textAlign: "center",
-        color: "#1976d2",
-        marginBottom: "10px",
-      }}
-    >
-      {data.missingPerson ? "بلاغ عن مفقود" : data.missingThing ? "بلاغ عن شيء مفقود" : "بلاغ"}
-    </Typography>
+        <CardContent sx={{ padding: "20px" }}>
+          {/* اسم النوع */}
+          {/* <Typography
+            variant="h6"
+            sx={{
+              fontWeight: "bold",
+              fontSize: { xs: "18px", md: "22px" },
+              textAlign: "center",
+              color: "#1976d2",
+              marginBottom: "10px",
+            }}
+          > */}
+          {/* {data.missingPerson ? "بلاغ عن مفقود" : data.missingThing ? "بلاغ عن شيء مفقود" : "بلاغ"} */}
+          {/* {
+              data.reportType === 0
+                ? (data.missingPerson ? "بلاغ عن مفقود شخص" : data.missingThing ? "بلاغ عن مفقود شيء" : "بلاغ عن مفقود")
+                : (data.missingPerson ? "بلاغ عن إيجاد شخص" : data.missingThing ? "بلاغ عن إيجاد شيء" : "بلاغ عن إيجاد")
+            } */}
 
-    {/* معلومات البوست */}
-    <Box sx={{ marginBottom: 1 }}>
-      {data.missingPerson ? (
-        <>
-          <Typography>الاسم: <strong>{data.missingPerson.name || "غير متوفر"}</strong></Typography>
-          <Typography>العمر: <strong>{data.missingPerson.age || "غير محدد"}</strong> سنة</Typography>
-          <Typography>الوصف: <strong>{data.missingPerson.description || "لا يوجد وصف"}</strong></Typography>
-        </>
-      ) : data.missingThing ? (
-        <>
-          <Typography>نوع الشيء: <strong>{data.missingThing.type || "غير محدد"}</strong></Typography>
-          <Typography>الوصف: <strong>{data.missingThing.description || "لا يوجد وصف"}</strong></Typography>
-        </>
-      ) : (
-        <Typography>لا توجد معلومات محددة</Typography>
-      )}
-    </Box>
+          {/* </Typography> */}
+          <Typography sx={{ color: color, fontWeight: "600", fontSize: "20px" }}>
+            {label}
+          </Typography>
+          {/* معلومات البوست */}
+          <Box sx={{ marginBottom: 1 }}>
+            {data.missingPerson ? (
+              <>
+                <Typography>الاسم: <strong>{data.missingPerson.name || "غير متوفر"}</strong></Typography>
+                <Typography>العمر: <strong>{data.missingPerson.age || "غير محدد"}</strong> سنة</Typography>
+                <Typography>الوصف: <strong>{data.missingPerson.description || "لا يوجد وصف"}</strong></Typography>
+              </>
+            ) : data.missingThing ? (
+              <>
+                <Typography>نوع الشيء: <strong>{data.missingThing.type || "غير محدد"}</strong></Typography>
+                <Typography>الوصف: <strong>{data.missingThing.description || "لا يوجد وصف"}</strong></Typography>
+              </>
+            ) : (
+              <Typography>لا توجد معلومات محددة</Typography>
+            )}
+          </Box>
 
-    {/* معلومات اضافية */}
-    <Box sx={{ marginBottom: 2 }}>
-      <Typography>المحافظة: {data.government?.nameAr || "غير محدد"}</Typography>
-      <Typography>المركز: {data.center?.nameAr || "غير محدد"}</Typography>
-      <Typography>رقم الهاتف: {data.phoneNumber || "غير متوفر"}</Typography>
-      <Typography>تاريخ الحادثة: {new Date(data.incidentTime).toLocaleDateString('ar-EG')}</Typography>
-    </Box>
+          {/* معلومات اضافية */}
+          <Box sx={{ marginBottom: 2 }}>
+            <Typography>المحافظة: {data.government?.nameAr || "غير محدد"}</Typography>
+            <Typography>المركز: {data.center?.nameAr || "غير محدد"}</Typography>
+            <Typography>رقم الهاتف: {data.phoneNumber || "غير متوفر"}</Typography>
+            <Typography>تاريخ الحادثة: {new Date(data.incidentTime).toLocaleDateString('ar-EG')}</Typography>
+          </Box>
 
-    {/* زر التفاصيل أو الإجراءات */}
-    {/* <Box
+          {/* زر التفاصيل أو الإجراءات */}
+          {/* <Box
       sx={{
         display: "flex",
         justifyContent: "center",
@@ -310,7 +333,7 @@ const Post = ({ data, onClick, navigateToUserProfile }) => {
         عرض التفاصيل
       </Button>
     </Box> */}
-  </CardContent>
+        </CardContent>
         <CardActions
           sx={{
             justifyContent: "space-around",
@@ -372,9 +395,8 @@ const Post = ({ data, onClick, navigateToUserProfile }) => {
             onClick={() => {
               window.navigator.share({
                 title: "SharedPost",
-                url: `https://hope3221-001-site1.btempurl.com/post/${
-                  data.id
-                }/${JSON.parse(data.isPeople)}`,
+                url: `https://hope3221-001-site1.btempurl.com/post/${data.id
+                  }/${JSON.parse(data.isPeople)}`,
               });
             }}
             sx={{

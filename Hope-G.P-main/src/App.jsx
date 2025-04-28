@@ -24,6 +24,7 @@ import AddAdmins from "./components/admin-dashboard/AddAdmins";
 import Chat from "./components/Chat-components/Chat";
 import Error404 from "./pages/Error404";
 import FaceSearch from './pages/FaceSearch';  // استيراد مكون FaceSearch
+import PostDetails from "./components/home-page-components/PostDetails";
 
 const App = () => {
   const cookies = Cookie();
@@ -45,6 +46,7 @@ const App = () => {
           path="/HomePage"
           element={isAuthenticated ? <HomePage /> : <Navigate to="/login" replace />}
         />
+        <Route path="/post-details/:id" element={<PostDetails />} />
         <Route path="/register" element={<Register />} />
         <Route path="/post/:postId/:isPeople" element={<SharedPost />} />
         <Route path="/MainCreatePost" element={<MainCreatePost />} />

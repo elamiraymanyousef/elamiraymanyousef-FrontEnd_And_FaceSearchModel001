@@ -147,7 +147,7 @@ const CreatePostPeople = ({ getDataForLosePeople }) => {
               }}
               label="Age"
             >
-              <MenuItem value={"Losties "}>شخص تائه</MenuItem>
+              <MenuItem value={"LostPerson"}>شخص تائه</MenuItem>
               <MenuItem value={"Accidents"}>حوادث</MenuItem>
               <MenuItem value={"Shelters"}>ملاجئ</MenuItem>
             </Select>
