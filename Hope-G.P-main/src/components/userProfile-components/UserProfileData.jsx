@@ -15,6 +15,7 @@ import SuccessMsg from "./SuccessMsg";
 
 const cookies = Cookie();
 const token = cookies.get("Cookie");
+const userId = localStorage.getItem("userId");
 console.log(token);
 function UserProfileData() {
   const [openPopUp, setopenPopUp] = useState(false);
@@ -33,14 +34,14 @@ function UserProfileData() {
   }, []);
   const getProfileDate = () => {
     axios
-      .get(`${GetProfile}`, {
+      .get(`${GetProfile}${userId}`, {
         headers: {
           Authorization: "Bearer " + token,
         },
       })
       .then((response) => {
         setProfileData(response.data.data);
-        console.log(response);
+        console.log(response.data);
       });
   };
   const handleimge = (e) => {
@@ -286,7 +287,7 @@ function UserProfileData() {
                     }}
                   >
                     {" "}
-                    {profileData.displayName}{" "}
+                    {profileData.firstName}{" "+profileData.lastName}
                   </Typography>
                   <Typography>
                     <img src={CaretLeft} alt="CaretLeft" />
@@ -319,7 +320,7 @@ function UserProfileData() {
                     }}
                   >
                     {" "}
-                    {profileData.city}{" "}
+                    {profileData.governmentName}{" "}
                   </Typography>
                   <Typography>
                     <img src={CaretLeft} alt="CaretLeft" />
@@ -430,7 +431,7 @@ function UserProfileData() {
                       color: "#373B55",
                     }}
                   >
-                    رقم الهاتف{" "}
+                    رقم الهاتف{" "} 
                   </Typography>
                   <Typography
                     sx={{
