@@ -130,23 +130,6 @@ function HomePage() {
     }
   };
 
-  // Use useEffect to trigger the API request when the component mounts
-  // useEffect(() => {
-  //   if (window.innerWidth <= 768) {
-  //     setIsSearchVisible(true);
-  //   }
-  //   // Fetch initial data based on the selected category
-  //   if (selectedCategory) {
-  //     console.log("137",selectedCategory);
-
-  //     const apiEndpoint = getCategoryEndpoint(selectedCategory); // Include PageNumber in the API endpoint
-  //     handleFetchData(apiEndpoint, PageNumber);
-  //   }
-  //   window.addEventListener("scroll", handleScroll);
-  //   return () => {
-  //     window.removeEventListener("scroll", handleScroll);
-  //   };
-  // }, [selectedCategory, PageNumber]); // Include PageNumber in the dependencies array
   useEffect(() => {
     if (window.innerWidth <= 768) {
       setIsSearchVisible(true);
@@ -156,9 +139,15 @@ function HomePage() {
       const apiEndpoint = getCategoryEndpoint(selectedCategory);
       handleFetchData(apiEndpoint, PageNumber);
     }
+    
+    // Add scroll event listener
+    window.addEventListener("scroll", handleScroll);
+    
+    // Clean up event listener on component unmount
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
   }, [selectedCategory, PageNumber]);
-
-
 
   console.log(PageNumber);
   const getCategoryEndpoint = (category) => {
@@ -174,7 +163,6 @@ function HomePage() {
   };
   const handleCategorySelect = (event, category) => {
     console.log("category = ", category);
-
 
     setIsOpen(false);
     setApiAllData([]); // Reset apiAllData array
@@ -196,7 +184,10 @@ function HomePage() {
   );
 
   return (
-    <>
+    <Box sx={{ 
+      backgroundColor: "#f8f9fa", 
+      minHeight: "100vh"
+    }}>
       <Dialog
         open={isPopupOpen}
         onClose={(event, reason) => {
@@ -211,16 +202,17 @@ function HomePage() {
             width: { xs: "95%", md: "60%" },
             margin: "0 10px",
             maxHeight: "465px",
+            boxShadow: "0px 8px 30px rgba(0, 0, 0, 0.12)",
           },
         }}
       >
-
         <DialogTitle sx={{ padding: "0" }}>
           <Box
             onClick={() => setIsPopupOpen(false)}
             color="primary"
             sx={{
-              width: { xs: "25px", md: "50px" },
+              width: { xs: "30px", md: "50px" },
+              height: { xs: "30px", md: "50px" },
               borderRadius: "50%",
               background: "#EBEBEB",
               color: "#000",
@@ -231,6 +223,11 @@ function HomePage() {
               display: "flex",
               justifyContent: "center",
               alignItems: "center",
+              zIndex: 2,
+              transition: "all 0.3s ease",
+              "&:hover": {
+                background: "#d1d1d1",
+              },
             }}
           >
             X
@@ -243,12 +240,15 @@ function HomePage() {
             overflow: "hidden", // Ensure content stays within rounded corners
           }}
         >
-          <Grid container spacing={2}>
+          <Grid container spacing={0}>
             <Grid
               item
               xs={12}
               sm={6}
-              sx={{ height: { xs: "500px", md: "465px" } }}
+              sx={{ 
+                height: { xs: "500px", md: "465px" },
+                position: "relative"
+              }}
             >
               <Box
                 component="img"
@@ -258,6 +258,11 @@ function HomePage() {
                   width: "100%",
                   height: { xs: "60%", md: "100%" },
                   borderBottomLeftRadius: { xs: "200%", md: "0" },
+                  objectFit: "cover",
+                  transition: "transform 0.5s ease",
+                  "&:hover": {
+                    transform: { xs: "none", md: "scale(1.05)" },
+                  },
                 }}
               ></Box>
             </Grid>
@@ -271,6 +276,8 @@ function HomePage() {
                 justifyContent: "center",
                 alignItems: "center",
                 marginTop: { xs: "-250px", md: "0" },
+                padding: { xs: "20px", md: "30px" },
+                background: "#fff",
               }}
             >
               <Box>
@@ -283,6 +290,8 @@ function HomePage() {
                     marginBottom: { xs: "20px", sm: "50px" },
                     fontSize: { xs: "20px", md: "36px" },
                     fontWeight: "600",
+                    color: "#373b55",
+                    textShadow: "0px 2px 4px rgba(0,0,0,0.1)"
                   }}
                 >
                   فلسطيني .....
@@ -293,6 +302,8 @@ function HomePage() {
                     textAlign: "center",
                     fontSize: { xs: "12px", md: "20px" },
                     fontWeight: "300",
+                    color: "#555",
+                    lineHeight: "1.8",
                   }}
                 >
                   ستنتهي الحرب يوما{"\n"}
@@ -310,17 +321,13 @@ function HomePage() {
       </Dialog>
 
       <Box>
-        {/* <Navbar
-          categories={["incoming", "outgoing", "archived"]}
-          onCategorySelect={handleCategorySelect}
-          isOpen={isOpen}
-        /> */}
         <Navbar
           onNotificationIconClick={handleNotificationIconClick}
           isOpen={isOpen}
           anchorEl={anchorEl}
           onClose={handleNotificationClose}
           onSelectCategory={(category) => handleCategorySelect(event, category)}
+          sx={{ boxShadow: "0 4px 12px rgba(0,0,0,0.05)" }}
         />
         {/* Notification tooltip */}
         <Popover
@@ -336,7 +343,14 @@ function HomePage() {
             vertical: "top",
             horizontal: "right",
           }}
-          sx={{ marginTop: "20px" }}
+          sx={{ 
+            marginTop: "20px",
+            "& .MuiPaper-root": {
+              borderRadius: "12px",
+              boxShadow: "0 8px 30px rgba(0,0,0,0.12)",
+              overflow: "hidden"
+            }
+          }}
         >
           <Notification />
         </Popover>
@@ -345,20 +359,26 @@ function HomePage() {
             sx={{
               backgroundImage: `url(${bgImage})`,
               height: { xs: "50vh", md: "85vh" },
-              // width: "100vw",
               backgroundSize: { xs: "cover", md: "100%" },
               backgroundRepeat: "no-repeat",
               borderRadius: { xs: 5, md: 12 },
               backgroundPosition: "center",
+              boxShadow: "0 10px 30px rgba(0,0,0,0.15)",
+              transition: "transform 0.3s ease",
+              "&:hover": {
+                transform: "translateY(-5px)",
+              },
             }}
           >
             <Box
               sx={{
                 height: { xs: "100%", md: "85vh" },
-                // width: "100vw",
                 background:
-                  "linear-gradient(to right, rgba(55, 59, 85, 1), rgba(196, 196, 196, 0))",
+                  "linear-gradient(to right, rgba(55, 59, 85, 0.85), rgba(196, 196, 196, 0))",
                 borderRadius: { xs: 5, md: 12 },
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "center"
               }}
             >
               <Box
@@ -376,16 +396,29 @@ function HomePage() {
                     fontFamily: "defaultFont",
                     color: "#fff",
                     fontWeight: 400,
+                    textShadow: "2px 2px 8px rgba(0,0,0,0.3)",
+                    animation: "fadeIn 1.5s ease-out",
+                    "@keyframes fadeIn": {
+                      "0%": {
+                        opacity: 0,
+                        transform: "translateY(20px)"
+                      },
+                      "100%": {
+                        opacity: 1,
+                        transform: "translateY(0)"
+                      }
+                    }
                   }}
                 >
                   Find
                   <span
                     style={{
-                      background: "linear-gradient(45deg, #A1C4FD 100%, #C2E9FB 100%)",
+                      background: "linear-gradient(45deg, #A1C4FD 30%, #C2E9FB 90%)",
                       WebkitBackgroundClip: "text",
                       WebkitTextFillColor: "transparent",
                       marginLeft: "10px",
                       fontFamily: "defaultFont",
+                      textShadow: "none"
                     }}
                   >
                     Hope
@@ -398,6 +431,19 @@ function HomePage() {
                     fontSize: { xs: "16px", md: 25, xl: 30 },
                     fontFamily: "defaultFont",
                     color: "#fff",
+                    opacity: 0.9,
+                    marginTop: "8px",
+                    animation: "fadeIn 1.5s ease-out 0.3s both",
+                    "@keyframes fadeIn": {
+                      "0%": {
+                        opacity: 0,
+                        transform: "translateY(20px)"
+                      },
+                      "100%": {
+                        opacity: 0.9,
+                        transform: "translateY(0)"
+                      }
+                    }
                   }}
                 >
                   to find your lost
@@ -407,10 +453,20 @@ function HomePage() {
                 <Box
                   sx={{
                     display: "flex",
-                    // alignItems: "center",
                     justifyContent: "center",
                     bottom: { md: 100, xl: -150 },
                     position: "relative",
+                    animation: "fadeUp 1s ease-out 0.6s both",
+                    "@keyframes fadeUp": {
+                      "0%": {
+                        opacity: 0,
+                        transform: "translateY(30px)"
+                      },
+                      "100%": {
+                        opacity: 1,
+                        transform: "translateY(0)"
+                      }
+                    }
                   }}
                 >
                   {isSearchVisible && <Search />}
@@ -425,12 +481,10 @@ function HomePage() {
         sx={{
           position: "relative",
           bottom: 120,
-          // width: "100vw",
           display: { xs: "none", md: "flex" },
           flexDirection: "column",
           alignItems: "baseline",
           justifyContent: "center",
-          // right: {md:"3%",xl:"200px"},
           width: "70%",
           margin: "0 auto",
         }}
@@ -446,15 +500,16 @@ function HomePage() {
             alignItems: "center",
             justifyContent: "center",
             borderRadius: "50px 50px 0px 0px",
-            // float: "left",
-            // left: {md:"120px",xl:"230px"},
-            // bottom: {md:"150px",xl:"171px"},
-            // position: "relative",
             cursor: "pointer",
+            boxShadow: "0 -5px 20px rgba(0,0,0,0.1)",
+            transition: "transform 0.3s ease, box-shadow 0.3s ease",
+            "&:hover": {
+              transform: "translateY(-5px)",
+              boxShadow: "0 -8px 25px rgba(0,0,0,0.15)",
+            }
           }}
         >
-          <Link to="/MainCreatePost">
-            {/* Specify the path to MainCreatePost page */}
+          <Link to="/MainCreatePost" style={{ textDecoration: "none" }}>
             <Button
               sx={{
                 backgroundColor: "transparent",
@@ -462,8 +517,11 @@ function HomePage() {
                 fontSize: { md: "16px", xl: "20px" },
                 fontWeight: "bold",
                 cursor: "pointer",
+                color: "#373b55",
+                transition: "color 0.3s ease",
                 "&:hover": {
                   backgroundColor: "transparent",
+                  color: "#506ae4",
                 },
               }}
             >
@@ -476,15 +534,22 @@ function HomePage() {
                   width: { md: "30px", xl: "50px" },
                   height: { md: "30px", xl: "50px" },
                   marginLeft: "10px",
+                  transition: "transform 0.3s ease",
+                  "&:hover": {
+                    transform: "rotate(15deg)",
+                  },
                 }}
               />
             </Button>
-
           </Link>
         </Box>
         <NavigationBar
           toggleSearchVisibility={toggleSearchVisibility}
           onSelectCategory={(category) => handleCategorySelect(event, category)}
+          sx={{ 
+            boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
+            borderRadius: "0 0 12px 12px"
+          }}
         />
       </Box>
 
@@ -495,28 +560,62 @@ function HomePage() {
           gap: { sm: "100px", md: "40px", xl: "100px" },
           justifyContent: "center",
           padding: "20px 50px",
+          position: "relative",
+          zIndex: 1,
         }}
       >
         {apiAllData &&
-          apiAllData.map((postData,index) => (
-            <Post
-            key={`${postData.id}-${index}`}
-              data={postData}
-              onClick={() => handlePostClick(postData)}
-              navigateToUserProfile={navigateToUserProfile}
-            />
+          apiAllData.map((postData, index) => (
+            <Box
+              key={`${postData.id}-${index}`}
+              sx={{
+                transform: "translateY(0px)",
+                transition: "transform 0.4s ease, box-shadow 0.4s ease",
+                "&:hover": {
+                  transform: "translateY(-10px)",
+                  "& > div": {
+                    boxShadow: "0 15px 30px rgba(0,0,0,0.15)",
+                  }
+                }
+              }}
+            >
+              <Post
+                data={postData}
+                onClick={() => handlePostClick(postData)}
+                navigateToUserProfile={navigateToUserProfile}
+                sx={{
+                  backgroundColor: "#fff",
+                  borderRadius: "16px",
+                  boxShadow: "0 8px 20px rgba(0,0,0,0.08)",
+                  overflow: "hidden",
+                  transition: "box-shadow 0.4s ease",
+                }}
+              />
+            </Box>
           ))}
       </Box>
-      {postsLoading && <Loader />}
+      
+      {postsLoading && (
+        <Box sx={{ display: "flex", justifyContent: "center", padding: "40px 0" }}>
+          <Loader />
+        </Box>
+      )}
+      
       {selectedPost && (
         <PostDetails
           token={token}
           post={selectedPost}
           onClose={handleClosePostDetails}
           setSelectedPost={setSelectedPost}
+          sx={{
+            "& .MuiPaper-root": {
+              borderRadius: "16px",
+              boxShadow: "0 15px 50px rgba(0,0,0,0.15)",
+            }
+          }}
         />
       )}
-    </>
+    </Box>
   );
 }
 
