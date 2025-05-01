@@ -26,11 +26,14 @@ import {
   OutlinedInput,
   Paper,
   Container,
+  Alert,
+  Collapse,
 } from "@mui/material";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import EmailIcon from "@mui/icons-material/Email";
 import LockIcon from "@mui/icons-material/Lock";
+import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 
 // Image imports
 import LoginImage from "../assets/login-image.jpg";
@@ -49,34 +52,82 @@ function Login() {
   const [changePass, setChangePass] = useState(false);
   const [errInpemail, seterrInpemail] = useState(false);
   const [errInppass, seterrInppass] = useState(false);
+  const [emailErrorText, setEmailErrorText] = useState("");
+  const [passwordErrorText, setPasswordErrorText] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [msg, setmsg] = useState(false);
   const [ErrForImg, setErrForImg] = useState(false);
   const [succesOrFAIL, setsuccesOrFAIL] = useState("");
   const [msgforsuccess, setMsgforsuccess] = useState(false);
+  const [showErrorAlert, setShowErrorAlert] = useState(false);
+  const [errorAlertMessage, setErrorAlertMessage] = useState("");
   
   const isOpen = () => setChangePass(true);
   const popUpchangPass = (data) => setChangePass(data);
-  const handlChanges = (e) => setForm({ ...Form, [e.target.name]: e.target.value });
+  
+  const handlChanges = (e) => {
+    setForm({ ...Form, [e.target.name]: e.target.value });
+    
+    // Clear validation errors when user starts typing
+    if (e.target.name === "email") {
+      seterrInpemail(false);
+      setEmailErrorText("");
+    }
+    if (e.target.name === "password") {
+      seterrInppass(false);
+      setPasswordErrorText("");
+    }
+    
+    // Clear global error alert when user starts typing
+    setShowErrorAlert(false);
+  };
+  
   const handleClickShowPassword = () => setShowPassword((show) => !show);
   const handleMouseDownPassword = (event) => event.preventDefault();
 
+  const validateEmail = (email) => {
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return re.test(String(email).toLowerCase());
+  };
+
   const handleSubmit = async (event) => {
     event.preventDefault();
+    
+    // Reset all error states
     setmsg(false);
     seterrInppass(false);
     seterrInpemail(false);
+    setEmailErrorText("");
+    setPasswordErrorText("");
+    setShowErrorAlert(false);
+    
+    let hasErrors = false;
 
+    // Validate email
     if (!Form.email) {
       seterrInpemail(true);
+      setEmailErrorText("البريد الإلكتروني مطلوب");
+      hasErrors = true;
+    } else if (!validateEmail(Form.email)) {
+      seterrInpemail(true);
+      setEmailErrorText("يرجى إدخال بريد إلكتروني صحيح");
+      hasErrors = true;
     }
+    
+    // Validate password
     if (!Form.password) {
       seterrInppass(true);
+      setPasswordErrorText("كلمة المرور مطلوبة");
+      hasErrors = true;
+    } else if (Form.password.length < 6) {
+      seterrInppass(true);
+      setPasswordErrorText("كلمة المرور يجب أن تكون على الأقل 6 أحرف");
+      hasErrors = true;
     }
 
-    if (!Form.email || !Form.password) {
-      setsuccesOrFAIL("يرجى ملء جميع الحقول");
-      setmsg(true);
+    if (hasErrors) {
+      setErrorAlertMessage("يرجى تصحيح الأخطاء في النموذج قبل المتابعة");
+      setShowErrorAlert(true);
       return;
     }
 
@@ -93,6 +144,7 @@ function Login() {
       if (res.succeeded) {
         setmsg(true);
         setsuccesOrFAIL("تم تسجيل الدخول بنجاح");
+        setErrForImg(false);
         const token = res.data.token;
         const userId = res.data.userId;
 
@@ -102,12 +154,49 @@ function Login() {
         navigate("/HomePage");
       } else {
         setmsg(true);
+        setErrForImg(true);
         setsuccesOrFAIL(res.message || "فشل تسجيل الدخول");
+        
+        // Show more specific error messages for common issues
+        if (res.message && res.message.includes("password")) {
+          seterrInppass(true);
+          setPasswordErrorText("كلمة المرور غير صحيحة");
+        } else if (res.message && res.message.includes("email")) {
+          seterrInpemail(true);
+          setEmailErrorText("البريد الإلكتروني غير مسجل");
+        } else {
+          // Set global error alert
+          setErrorAlertMessage(res.message || "بيانات الدخول غير صحيحة، يرجى التحقق من البريد الإلكتروني وكلمة المرور");
+          setShowErrorAlert(true);
+        }
       }
     } catch (err) {
       console.log(err);
       setmsg(true);
-      setsuccesOrFAIL("حدث خطأ غير متوقع");
+      setErrForImg(true);
+      
+      // Handle different error scenarios
+      if (err.response) {
+        // The request was made and the server responded with a status code outside the 2xx range
+        if (err.response.status === 401) {
+          setsuccesOrFAIL("البريد الإلكتروني أو كلمة المرور غير صحيحة");
+        } else if (err.response.status === 404) {
+          setsuccesOrFAIL("البريد الإلكتروني غير مسجل في النظام");
+        } else if (err.response.status === 429) {
+          setsuccesOrFAIL("عدد محاولات تسجيل الدخول تجاوز الحد المسموح، يرجى المحاولة لاحقًا");
+        } else {
+          setsuccesOrFAIL("حدث خطأ أثناء محاولة تسجيل الدخول، يرجى المحاولة مرة أخرى");
+        }
+      } else if (err.request) {
+        // The request was made but no response was received
+        setsuccesOrFAIL("لا يمكن الاتصال بالخادم، يرجى التحقق من اتصالك بالإنترنت");
+      } else {
+        // Something happened in setting up the request
+        setsuccesOrFAIL("حدث خطأ غير متوقع، يرجى المحاولة مرة أخرى");
+      }
+      
+      setErrorAlertMessage("فشل تسجيل الدخول: " + setsuccesOrFAIL);
+      setShowErrorAlert(true);
     }
   };
 
@@ -273,8 +362,6 @@ function Login() {
                 p: { xs: 3, sm: 4, md: 5 },
                 width: '100%',
                 maxWidth: 650,
-                
-           
                 borderRadius: 3,
                 bgcolor: '#fff',
                 boxShadow: '0px 8px 25px rgba(17, 18, 22, 0.05)',
@@ -313,6 +400,27 @@ function Login() {
                 </Typography>
               </Box>
 
+              {/* Global Error Alert */}
+              <Collapse in={showErrorAlert}>
+                <Alert 
+                  severity="error" 
+                  icon={<ErrorOutlineIcon fontSize="inherit" />}
+                  sx={{ 
+                    mb: 3, 
+                    borderRadius: 2,
+                    '& .MuiAlert-icon': {
+                      color: '#f44336',
+                    },
+                    '& .MuiAlert-message': {
+                      fontWeight: 500,
+                    }
+                  }}
+                  onClose={() => setShowErrorAlert(false)}
+                >
+                  {errorAlertMessage}
+                </Alert>
+              </Collapse>
+
               <Box
                 component="form"
                 onSubmit={handleSubmit}
@@ -328,11 +436,11 @@ function Login() {
                     value={Form.email}
                     onChange={handlChanges}
                     error={errInpemail}
-                    helperText={errInpemail ? "البريد الإلكتروني مطلوب" : ""}
+                    helperText={errInpemail ? emailErrorText : ""}
                     InputProps={{
                       startAdornment: (
                         <InputAdornment position="start">
-                          <EmailIcon sx={{ color: "#408CFF" }} />
+                          <EmailIcon sx={{ color: errInpemail ? "#f44336" : "#408CFF" }} />
                         </InputAdornment>
                       ),
                     }}
@@ -342,15 +450,19 @@ function Login() {
                         height: { xs: 40, md: 50, xl: 70 },
                         
                         '&:hover fieldset': {
-                          borderColor: '#408CFF',
+                          borderColor: errInpemail ? '#f44336' : '#408CFF',
                         },
                         '&.Mui-focused fieldset': {
-                          borderColor: '#408CFF',
-                          
+                          borderColor: errInpemail ? '#f44336' : '#408CFF',
                         },
                       },
                       '& .MuiInputLabel-root.Mui-focused': {
-                        color: '#408CFF',
+                        color: errInpemail ? '#f44336' : '#408CFF',
+                      },
+                      '& .MuiFormHelperText-root': {
+                        fontWeight: 500,
+                        fontSize: '0.8rem',
+                        marginTop: '4px',
                       },
                     }}
                   />
@@ -362,7 +474,7 @@ function Login() {
                     error={errInppass}
                     sx={{
                       '&.Mui-focused': {
-                        color: '#408CFF',
+                        color: errInppass ? '#f44336' : '#408CFF',
                       },
                     }}
                   >
@@ -377,7 +489,7 @@ function Login() {
                     error={errInppass}
                     startAdornment={
                       <InputAdornment position="start">
-                        <LockIcon sx={{ color: "#408CFF" }} />
+                        <LockIcon sx={{ color: errInppass ? "#f44336" : "#408CFF" }} />
                       </InputAdornment>
                     }
                     endAdornment={
@@ -396,16 +508,25 @@ function Login() {
                       borderRadius: 2,
                        height: { xs: 40, md: 50, xl: 70 },
                       '&:hover .MuiOutlinedInput-notchedOutline': {
-                        borderColor: '#408CFF',
+                        borderColor: errInppass ? '#f44336' : '#408CFF',
                       },
                       '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                        borderColor: '#408CFF',
+                        borderColor: errInppass ? '#f44336' : '#408CFF',
                       },
                     }}
                   />
                   {errInppass && (
-                    <Typography variant="caption" color="error" sx={{ mt: 0.5, mr: 1.5 }}>
-                      كلمة المرور مطلوبة
+                    <Typography 
+                      variant="caption" 
+                      color="error" 
+                      sx={{ 
+                        mt: 0.5, 
+                        mr: 1.5, 
+                        fontWeight: 500,
+                        fontSize: '0.8rem',
+                      }}
+                    >
+                      {passwordErrorText}
                     </Typography>
                   )}
                 </FormControl>
@@ -446,15 +567,16 @@ function Login() {
                   </Typography>
                 </Box>
 
-                {/* <Button
+                <Button
                   type="submit"
-                  width="100%"
+                  width="auto"
                   variant="contained"
                   size="large"
                   sx={{
                     mt: 2,
                     mb: 3,
-                    py: 1.5,
+                    py: 1,
+                    px: 4,
                     borderRadius: 8,
                     backgroundColor: '#408CFF',
                     fontWeight: 600,
@@ -465,38 +587,15 @@ function Login() {
                       boxShadow: '0 6px 15px rgba(64, 140, 255, 0.4)',
                     },
                     transition: 'all 0.3s ease',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    margin: '0 auto',
+                    minWidth: '200px',
                   }}
                 >
                   تسجيل الدخول
-                </Button> */}
-                <Button
-  type="submit"
-  width="auto" // أو يمكنك تحديد عرض معين إذا أردت
-  variant="contained"
-  size="large" // تم تقليص الحجم
-  sx={{
-    mt: 2,
-    mb: 3,
-    py: 1,
-    borderRadius: 8,
-    backgroundColor: '#408CFF',
-    fontWeight: 600,
-    fontSize: '1rem', // يمكنك تعديل الحجم هنا
-    boxShadow: '0 4px 10px rgba(64, 140, 255, 0.3)',
-    '&:hover': {
-      backgroundColor: '#3575d9',
-      boxShadow: '0 6px 15px rgba(64, 140, 255, 0.4)',
-    },
-    transition: 'all 0.3s ease',
-    display: 'flex', // إضافة خصائص التوسيط
-    justifyContent: 'center',
-    alignItems: 'center',
-    margin: '0 auto', // لضمان أن البوتون في المنتصف
-  }}
->
-  تسجيل الدخول
-</Button>
-
+                </Button>
               </Box>
 
               <Box sx={{ display: { xs: 'flex', sm: 'none' }, justifyContent: 'center', mt: 3 }}>
