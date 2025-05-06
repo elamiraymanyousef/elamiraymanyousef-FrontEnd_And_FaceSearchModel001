@@ -5,6 +5,7 @@ import PersonOutlineOutlinedIcon from "@mui/icons-material/PersonOutlineOutlined
 import HealingOutlinedIcon from "@mui/icons-material/HealingOutlined";
 import NightShelterOutlinedIcon from "@mui/icons-material/NightShelterOutlined";
 import LaptopOutlinedIcon from "@mui/icons-material/LaptopOutlined";
+import FaceIcon from "@mui/icons-material/Face"; // استيراد أيقونة الوجه للبحث بالوجه
 // import notification from "../../assets/Bell.png";
 import bookMark from "../../assets/archive icon.png";
 
@@ -17,7 +18,6 @@ import { useState } from "react";
 
 function Navbar({
   onNotificationIconClick,
-
   isOpen,
   anchorEl,
   onClose,
@@ -56,7 +56,6 @@ function Navbar({
       sx={{
         backgroundColor: "#fff",
         p: { xs: 0, sm: 1, xl: 3 },
-
       }}
     >
       <Toolbar style={{ display: "flex", justifyContent: "space-between", gap: { xs: "10px", md: "50px" } }}>
@@ -77,6 +76,21 @@ function Navbar({
             </Box>
           </Link>
           <Box sx={{ display: "flex", gap: { xs: "0px", md: "15px" } }}>
+            {/* إضافة أيقونة البحث بالوجه */}
+            <Tooltip title="البحث بالوجه" arrow>
+              <IconButton component={Link} to="/FaceSearch">
+                <FaceIcon 
+                  sx={{
+                    fontSize: { xs: "20px", sm: "25px", md: "45px" },
+                    borderRadius: "15px",
+                    color: "#000",
+                    '&:hover': {
+                      color: "#F68084",
+                    }
+                  }}
+                />
+              </IconButton>
+            </Tooltip>
             <Tooltip title="Notifications" arrow>
               <IconButton onClick={onNotificationIconClick}>
                 <NotificationsNoneIcon
@@ -114,25 +128,12 @@ function Navbar({
         </Box>
 
         <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-
           <Box sx={{ display: { xs: "flex", md: "none" } }}>
             <Link to="/MainCreatePost" style={{ fontSize: "12px" }}>انشاءمنشور</Link>
           </Box>
           <Box sx={{ display: { xs: "flex", md: "none" } }}>
-            {/* <Button sx={{fontSize:"15px",color:"#000"}} aria-controls={open ? 'basic-menu' : undefined}
-            aria-haspopup="true"
-            aria-expanded={open ? 'true' : undefined}
-            onClick={handleClick} 
-          
-           >
-               <img src={cartLeft} alt="cartLeft" style={{marginLeft:"10px"}}/>
-             الكل
-            
-             </Button> */}
             <List
               component="nav"
-
-
             >
               <ListItemButton
                 id="lock-button"
@@ -145,7 +146,6 @@ function Navbar({
                 <img src={cartLeft} alt="cartLeft" style={{ marginLeft: "4px" }} />
                 <ListItemText
                   primary={options[selectedIndex]}
-
                 />
               </ListItemButton>
             </List>
@@ -208,11 +208,9 @@ function Navbar({
                 >متعلقات شخصيه</Typography>
                 <LaptopOutlinedIcon sx={{ fontSize: "25px" }} />
               </MenuItem>
-
             </Menu>
           </Box>
           <Logo />
-
         </Box>
       </Toolbar>
     </Box>

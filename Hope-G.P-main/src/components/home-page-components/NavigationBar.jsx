@@ -1,13 +1,14 @@
 import { Box, Divider, styled } from "@mui/material";
-
 import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
-
 import PersonOutlineOutlinedIcon from "@mui/icons-material/PersonOutlineOutlined";
 import HealingOutlinedIcon from "@mui/icons-material/HealingOutlined";
 import NightShelterOutlinedIcon from "@mui/icons-material/NightShelterOutlined";
 import LaptopOutlinedIcon from "@mui/icons-material/LaptopOutlined";
+// Import the face icon for FaceSearch
+import FaceOutlinedIcon from "@mui/icons-material/FaceOutlined";
 import Search from "../../assets/home-search.png";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom"; // Import for navigation
 
 const Links = styled("a")({
   fontSize: "27px",
@@ -16,14 +17,17 @@ const Links = styled("a")({
   display: "block",
   marginBottom: "20px",
 });
+
 const ListItemStyle = styled("li")({
   width: "fit-content",
   listStyle: "none",
   textAlign: "center",
 });
+
 const NavigationBar = ({ toggleSearchVisibility, onSelectCategory }) => {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [isIconRotated, setIsIconRotated] = useState(false);
+  const navigate = useNavigate(); // Hook for navigation
 
   const handleIconClick = () => {
     setIsIconRotated((prev) => {
@@ -42,14 +46,17 @@ const NavigationBar = ({ toggleSearchVisibility, onSelectCategory }) => {
     toggleSearchVisibility();
   };
 
+  // Handle navigation to FaceSearch page
+  const handleFaceSearchClick = () => {
+    navigate('/facesearch'); // Navigate to the FaceSearch page
+  };
+
   return (
     <Box
       sx={{
         background: "#fff",
-        
         height: {md:"100px",xl:"171px"},
         width: {md:"100%",xl:"100%"},
-       
         py:{md:1,xl:5},
         px: {md:2,xl:8},
         borderRadius: {md:"0 40px 40px 40px",xl:"0 52px 52px 52px"},
@@ -61,31 +68,32 @@ const NavigationBar = ({ toggleSearchVisibility, onSelectCategory }) => {
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
-          // gap: "30px",
         }}
       >
+        {/* New FaceSearch Icon */}
         <ListItemStyle>
-          <Links onClick={handleIconClick}>
-            <Box
+          <Links
+            onClick={handleFaceSearchClick}
+            sx={{
+              color: "#2A3355",
+              cursor: "pointer",
+              fontSize:{md:'24px',xl:"35px"}
+            }}
+          >
+            بحث بالوجه
+            <FaceOutlinedIcon
               sx={{
-                width: {md:"60px",xl:"93px"},
-                height: {md:"60px",xl:"93px"},
-                borderRadius: "50%",
-                display:"flex",
-                justifyContent:"center",
-                alignItems:"center",
-                background: isIconRotated ? "#F68084" : "#2A3355",
-                padding: "25px",
-                transform: isIconRotated ? "rotate(90deg)" : "rotate(0)",
-                transition: "transform 0.3s ease",
-                cursor: "pointer",
+                display: "block",
+                margin: "10px auto",
+                fontSize: {md:"40px",xl:"65px"},
+                fill: "#2A3355",
               }}
-            >
-              <img style={{ width: "40px" }} src={Search} alt="Search" />
-            </Box>
+            />
           </Links>
         </ListItemStyle>
         <Divider sx={{marginBottom:"10px",background:"#b9b5b5", width: "1px", height: {md:"75px",xl:"100px"} }} />
+        
+        {/* Existing Navigation Items */}
         <ListItemStyle>
           <Links
             onClick={() => {
