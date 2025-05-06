@@ -27,7 +27,7 @@ export const getAllTown =
 export const GetProfile =
   "http://hopesystem.runasp.net/api/Profile/GetProfile?UserId=";
 export const UpdateUserData =
-  "https://hope3221-001-site1.btempurl.com/api/Account/UpdateUserData";
+  "http://hopesystem.runasp.net/api/Profile/UpdateUserData";
 export const AddUserImage =
   "https://hope3221-001-site1.btempurl.com/api/Account/AddUserImage";
 export const GetProfileOfAnotherUser =

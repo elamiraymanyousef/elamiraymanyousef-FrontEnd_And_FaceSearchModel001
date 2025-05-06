@@ -1,8 +1,4 @@
-import { useState } from "react";
-import Backdrop from "@mui/material/Backdrop";
-import CaretLeft from "../../assets/profileUser/CaretLeft.png";
-
-import password from "../../assets/Lock.png";
+import { useState, useEffect } from "react";
 import {
   Box,
   Button,
@@ -10,505 +6,205 @@ import {
   CardContent,
   Divider,
   FormControl,
-  IconButton,
-  InputAdornment,
-  InputLabel,
-  OutlinedInput,
   TextField,
   Typography,
+  Backdrop,
+  InputLabel,
+  Select,
+  MenuItem,
+  OutlinedInput,
+  InputAdornment,
+  IconButton,
 } from "@mui/material";
-
 import axios from "axios";
-import { Visibility, VisibilityOff } from "@mui/icons-material";
-import { UpdateUserData } from "../../apiRequests/apiRequest";
 import Cookie from "cookie-universal";
 import SuccessMsg from "./SuccessMsg";
+import { getAllGovernments, UpdateUserData } from "../../apiRequests/apiRequest";
+
 const cookies = Cookie();
 const token = cookies.get("Cookie");
 
-export default function EditProgile({
+export default function EditProfile({
   openPopUp,
   setopenPopUp,
   ProfileData,
   getProfileDate,
 }) {
-  const [succesMsg, setsuccesMsg] = useState("");
-  const [Err, setErr] = useState(false);
-  const [Form, setForm] = useState({
-    displayName: ProfileData.displayName,
-    city: ProfileData.city,
-    password: "",
+  const [msg, setmsg] = useState(false);
+  const [ErrForImg, setErrForImg] = useState(false);
+  const [succesOrFAIL, setsuccesOrFAIL] = useState("");
+  const [msgforsuccess, setMsgforsuccess] = useState(false);
+  
+  const [successMsg, setSuccessMsg] = useState("");
+  const [error, setError] = useState(false);
+  const [governments, setGovernments] = useState([]);
+
+  const [form, setForm] = useState({
+    userId: localStorage.getItem("userId") || "",
+    firstName: ProfileData.firstName || "",
+    lastName: ProfileData.lastName || "",
+    phoneNumber: ProfileData.phoneNumber || "",
+    governmentId: ProfileData.government.id || "",
   });
-  console.log(Form);
-  const handlChanges = (e) => {
-    setForm({ ...Form, [e.target.name]: e.target.value });
+
+  useEffect(() => {
+    let isMounted = true;
+
+    axios.get(getAllGovernments).then((response) => {
+      if (isMounted) {
+        setGovernments(response.data);
+      }
+    });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
   };
+
   const handleSubmit = async (event) => {
     event.preventDefault();
-    setsuccesMsg("");
+    setSuccessMsg("");
+    console.log(form);
+    
     try {
-      await axios
-        .put(`${UpdateUserData}`, Form, {
-          headers: {
-            Authorization: "Bearer " + token,
-            "Accept-Language": "ar-EG",
-          },
-        })
-        .then((response) => {
-          console.log(response.data);
+      const response = await axios.put(UpdateUserData, form, {
+        headers: {
+          Authorization: "Bearer " + token,
+          "Accept-Language": "ar-EG",
+        },
+      });
+      console.log("response.isSuccess",response.data);
+      
+      if (response.data.succeeded) {
+        setError(false);
+        setSuccessMsg("Profile Updated Successfully");
+        getProfileDate();
+        setTimeout(() => {
+          window.location.reload();
 
-          if (response.data.isSuccess) {
-            setErr(true);
-            setsuccesMsg(response.data.message);
-            getProfileDate();
-            setInterval(() => {
-              setopenPopUp(false);
-            }, 1000);
-          } else {
-            setsuccesMsg(response.data.message);
-            setErr(false);
-          }
-        });
+        }, 1000);
+      } else {
+        setSuccessMsg(response.data.message);
+        setError(true);
+      }
     } catch (err) {
-      setsuccesMsg("حدث خطا خارجي");
-      setErr(false);
+      setSuccessMsg("حدث خطأ أثناء تحديث البيانات");
+      setError(true);
     }
-  };
-
-  const [showPassword, setShowPassword] = useState(false);
-
-  const handleClickShowPassword = () => setShowPassword((show) => !show);
-
-  const handleMouseDownPassword = (event) => {
-    event.preventDefault();
   };
 
   return (
     <>
-      {succesMsg !== "" && <SuccessMsg succesMsg={succesMsg} Err={Err} />}
-      {
-        <Backdrop
-          sx={{ color: "#483131", zIndex: 11 }}
-          open={open}
-          // onClick={handleClose}
-        >
-          <Card
-            sx={{
-              width: { xs: "350px", md: "450px", xl: "739px" },
-              borderRadius: "35px",
-              height: { xs: "450px", md: "530px", xl: "950px" },
-              minHeight: { xl: "920px" },
-            }}
-          >
-            <CardContent
-              sx={{
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                flexDirection: "column",
-                gap: { xs: "20px", md: "40px", xl: "60px" },
-                position: "relative",
-                padding: { md: "20px 30px", xl: "40px 30px" },
-              }}
-            >
-              <Box
+         {/* {msg && (
+            <SuccessOrFailMsg
+              succesOrFAIL={succesOrFAIL}
+              ErrForImg={ErrForImg}
+              setmsg={setmsg}
+            />
+          )}
+          
+          {msgforsuccess && (
+            <SuccessOrFailMsg
+              succesOrFAIL={succesOrFAIL}
+              ErrForImg={ErrForImg}
+              setmsg={setmsg}
+            />
+            
+          )} */}
+      {successMsg !== "" && <SuccessMsg succesMsg={successMsg} />}
+      <Backdrop sx={{ color: "#483131", zIndex: 11 }} open={openPopUp}>
+        <Card sx={{ width: { xs: 350, md: 500 }, borderRadius: 4 }}>
+          <CardContent>
+            <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
+              <Typography variant="h6" color="primary">
+                تعديل البيانات الشخصية
+              </Typography>
+              <Typography
+                onClick={() => setopenPopUp(false)}
                 sx={{
-                  display: "flex",
-
-                  gap: "30px",
-                  alignItems: "center",
+                  backgroundColor: "#EBEBEB",
+                  width: 30,
+                  height: 30,
+                  borderRadius: "50%",
+                  textAlign: "center",
+                  lineHeight: "30px",
+                  cursor: "pointer",
+                  fontSize: 20,
                 }}
               >
-                <Typography
-                  sx={{
-                    color: "#2E74FD",
+                x
+              </Typography>
+            </Box>
 
-                    fontWeight: "600",
-                    fontSize: "14px",
-                  }}
-                >
-                  معلومات الحساب
-                </Typography>
-                <Typography
-                  onClick={() => setopenPopUp(false)}
-                  sx={{
-                    backgroundColor: "#EBEBEB",
-                    width: "35px",
-                    height: "35px",
-                    borderRadius: "50%",
-                    textAlign: "center",
-                    lineHeight: "35px",
-                    fontWeight: "400",
-                    fontSize: "25px",
-                    position: "absolute",
-                    left: "20px",
-                    cursor: "pointer",
-                  }}
-                >
-                  x
-                </Typography>
-              </Box>
-              <Box
-                sx={{
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: { xs: "10px", md: "10px", xl: "20px" },
-
-                  width: "100%",
-                }}
-              >
-                <Box
-                  sx={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-
-                    padding: { xs: "0 10px", md: "0px 10px", xl: "30px 20px" },
-                  }}
-                >
-                  <Typography
-                    sx={{
-                      fontWeight: "600",
-                      fontSize: { xs: "11px", md: "13px", xl: "17px" },
-                      color: "#373B55",
-                    }}
-                  >
-                    الاسم
-                  </Typography>
-                  <Typography
-                    sx={{
-                      fontWeight: "600",
-                      fontSize: { xs: "11px", md: "13px", xl: "17px" },
-                      color: "#373B55",
-                    }}
-                  >
-                    {" "}
-                    {ProfileData.userName}
-                  </Typography>
-                  <Typography>
-                    <img src={CaretLeft} alt="CaretLeft" />
-                  </Typography>
-                </Box>
-                <Divider
-                  sx={{
-                    background: "#C1C1C1",
-                    height: { md: "1px", xl: "2px" },
-                    width: "98%",
-                  }}
+            <Box component="form" onSubmit={handleSubmit}>
+              <FormControl fullWidth sx={{ mb: 2 }}>
+                <TextField
+                  name="firstName"
+                  label="الاسم الأول"
+                  value={form.firstName}
+                  onChange={handleChange}
+                  fullWidth
                 />
-                <Box component="form" onSubmit={handleSubmit}>
-                  <Box
-                    sx={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
+              </FormControl>
 
-                      padding: { md: "0px 10px", xl: "30px 20px" },
-                    }}
-                  >
-                    <Typography
-                      sx={{
-                        fontWeight: "600",
-                        fontSize: { xs: "11px", md: "13px", xl: "17px" },
-                        color: "#373B55",
-                      }}
-                    >
-                      إسم الدخول
-                    </Typography>
-                    <Box
-                      component="form"
-                      sx={{
-                        display: "flex",
-                        alignItems: { md: "flex-end", xl: "flex-start" },
-                        position: "relative",
-                        flexDirection: "column",
-                        gap: { xs: "10px", md: "10px", xl: "20px" },
-                        width: "100%",
-                      }}
-                    >
-                      <FormControl
-                        // variant="outlined"
-                        fullWidth
-                      >
-                        <TextField
-                          fullWidth
-                          id="dName"
-                          name="displayName"
-                          value={Form.displayName}
-                          onChange={handlChanges}
-                          sx={{
-                            "& .MuiInputBase-root": {
-                              // height: 95,
-                              borderRadius: 8,
-                            },
-                            "& .MuiInputBase-input": {
-                              padding: 3,
-                              fontSize: { xs: "11px", md: 14, xl: 25 },
-                              textAlign: "center",
-                            },
-                            "& .MuiOutlinedInput-root": {
-                              "& > fieldset": { border: "none" },
-                            },
-                          }}
-                        />
-                      </FormControl>
-                    </Box>
-                    <Typography>
-                      <img src={CaretLeft} alt="CaretLeft" />
-                    </Typography>
-                  </Box>
-                  <Divider
-                    sx={{
-                      background: "#C1C1C1",
-                      height: { md: "1px", xl: "2px" },
-                      width: "98%",
-                    }}
-                  />
-                  <Box
-                    sx={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
+              <FormControl fullWidth sx={{ mb: 2 }}>
+                <TextField
+                  name="lastName"
+                  label="الاسم الأخير"
+                  value={form.lastName}
+                  onChange={handleChange}
+                  fullWidth
+                />
+              </FormControl>
 
-                      padding: { md: "0px 10px", xl: "30px 20px" },
-                    }}
-                  >
-                    <Typography
-                      sx={{
-                        fontWeight: "600",
-                        fontSize: { xs: "11px", md: "13px", xl: "17px" },
-                        color: "#373B55",
-                      }}
-                    >
-                      المحافظة
-                    </Typography>
-                    <Box
-                      sx={{
-                        display: "flex",
-                        alignItems: "flex-start",
-                        position: "relative",
-                        flexDirection: "column",
-                        gap: { xs: "10px", md: "10px", xl: "20px" },
-                        width: "100%",
-                      }}
-                    >
-                      <FormControl
-                        // variant="outlined"
-                        fullWidth
-                      >
-                        <TextField
-                          fullWidth
-                          id="dcity"
-                          name="city"
-                          value={Form.city}
-                          onChange={handlChanges}
-                          sx={{
-                            "& .MuiInputBase-root": {
-                              // height: 95,
-                              borderRadius: 8,
-                            },
-                            "& .MuiInputBase-input": {
-                              padding: 3,
-                              fontSize: { xs: "12px", md: 14, xl: 25 },
-                              textAlign: "center",
-                            },
-                            "& .MuiOutlinedInput-root": {
-                              "& > fieldset": { border: "none" },
-                            },
-                          }}
-                        />
-                      </FormControl>
-                    </Box>
-                    <Typography>
-                      <img src={CaretLeft} alt="CaretLeft" />
-                    </Typography>
-                  </Box>
-                  <Divider
-                    sx={{
-                      background: "#C1C1C1",
-                      height: { md: "1px", xl: "2px" },
-                      width: "98%",
-                    }}
-                  />
-                  <Box
-                    sx={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
+              <FormControl fullWidth sx={{ mb: 2 }}>
+                <TextField
+                  name="phoneNumber"
+                  label="رقم الهاتف"
+                  value={form.phoneNumber}
+                  onChange={handleChange}
+                  fullWidth
+                />
+              </FormControl>
 
-                      padding: {
-                        xs: "10px 10px",
-                        md: "10px 10px",
-                        xl: "30px 20px",
-                      },
-                    }}
-                  >
-                    <Typography
-                      sx={{
-                        fontWeight: "600",
-                        fontSize: { xs: "11px", md: "13px", xl: "17px" },
-                        color: "#373B55",
-                      }}
-                    >
-                      حسابك علي Hope
-                    </Typography>
-                    <Typography
-                      sx={{
-                        fontWeight: "600",
-                        fontSize: { xs: "11px", md: "13px", xl: "17px" },
-                        color: "#373B55",
-                      }}
-                    >
-                      {ProfileData.email}{" "}
-                    </Typography>
-                    <Typography>
-                      <img src={CaretLeft} alt="CaretLeft" />
-                    </Typography>
-                  </Box>
-                  <Divider
-                    sx={{
-                      background: "#C1C1C1",
-                      height: { md: "1px", xl: "2px" },
-                      width: "98%",
-                    }}
-                  />
-                  <Box
-                    sx={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                      padding: { md: "10px 10px", xl: "30px 20px" },
-                    }}
-                  >
-                    <Typography
-                      sx={{
-                        fontWeight: "600",
-                        fontSize: { xs: "11px", md: "13px", xl: "17px" },
-                        color: "#373B55",
-                      }}
-                    >
-                      رقم الهاتف{" "}
-                    </Typography>
-                    <Typography
-                      sx={{
-                        fontWeight: "600",
-                        fontSize: { xs: "11px", md: "13px", xl: "17px" },
-                        color: "#373B55",
-                      }}
-                    >
-                      {ProfileData.phoneNumber}{" "}
-                    </Typography>
-                    <Typography>
-                      <img src={CaretLeft} alt="CaretLeft" />
-                    </Typography>
-                  </Box>
-                  <Divider
-                    sx={{
-                      background: "#C1C1C1",
-                      height: { md: "1px", xl: "2px" },
-                      width: "98%",
-                    }}
-                  />
-                  <Box
-                    sx={{
-                      display: "flex",
-                      alignItems: "flex-start",
-                      position: "relative",
-                      flexDirection: "column",
-                      gap: { xs: "8px", md: "10px", xl: "30px" },
-                      width: "100%",
-                      marginTop: { xs: "15px", md: "20px", xl: "40px" },
-                    }}
-                  >
-                    <Typography
-                      sx={{
-                        fontSize: { xs: "12px", md: "14px" },
-                        fontWeight: "600",
-                        color: "#2E74FD",
-                      }}
-                    >
-                      أدخل كلمة المرور لتأكيد العملية
-                    </Typography>
-                    <FormControl variant="outlined" fullWidth>
-                      <OutlinedInput
-                        sx={{
-                          "& .MuiInputBase-input": {
-                            padding: 3,
-                            fontSize: { xs: "12px", md: 14, xl: 25 },
-                            textAlign: "center",
-                          },
-                          "& .MuiFormLabel-root": {
-                            fontSize: { xs: "12px", md: 14, xl: 25 },
-                            textAlign: "center",
-                            color: "#000",
-                            marginLeft: -1,
-                          },
+              <FormControl fullWidth sx={{ mb: 2 }}>
+                <InputLabel id="gov-label">اختر محافظتك</InputLabel>
+                <Select
+                  labelId="gov-label"
+                  name="governmentId"
+                  value={form.governmentId}
+                  onChange={handleChange}
+                  input={
+                    <OutlinedInput
+                      startAdornment={
+                        <InputAdornment position="start">
+                          {/* <IconButton aria-label="gov icon" sx={{ p: 0 }}>
+                            <img src={cityIcon} alt="city" width="20" />
+                          </IconButton> */}
+                        </InputAdornment>
+                      }
+                    />
+                  }
+                >
+                  {governments.map((gov) => (
+                    <MenuItem key={gov.id} value={gov.id}>
+                      {gov.nameAr}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
 
-                          // "& .MuiOutlinedInput-root": {
-                          //   "& > fieldset": showErrpass !== "" && {
-                          //     borderColor: "red",
-                          //   },
-                          // },
-                          height: { xs: "40px", md: 50, xl: 80 },
-                          borderRadius: { xs: 4, md: 5, xl: 8 },
-                          padding: 2,
-                        }}
-                        id="outlined-adornment-password"
-                        type={showPassword ? "text" : "Password"}
-                        startAdornment={
-                          <IconButton aria-label="toggle" edge="end">
-                            <img src={password} alt="Password" />
-                          </IconButton>
-                        }
-                        endAdornment={
-                          <InputAdornment position="start">
-                            <IconButton
-                              aria-label="toggle Password visibility"
-                              onClick={handleClickShowPassword}
-                              onMouseDown={handleMouseDownPassword}
-                              edge="end"
-                            >
-                              {showPassword ? (
-                                <VisibilityOff />
-                              ) : (
-                                <Visibility />
-                              )}
-                            </IconButton>
-                          </InputAdornment>
-                        }
-                        label="Password"
-                        name="password"
-                        required
-                        value={Form.password}
-                        onChange={handlChanges}
-                        inputProps={{ maxLength: 9 }}
-                      />
-                      <InputLabel htmlFor="outlined-adornment-password">
-                        كلمة المرور
-                      </InputLabel>
-                    </FormControl>
-
-                    <Box sx={{ width: "80%" }}>
-                      <Button
-                        type="submit"
-                        variant="contained"
-                        sx={{
-                          padding: "10px 40px",
-                          fontWeight: "700",
-                          fontSize: { xs: "10px", md: "15px", xl: "20px" },
-                          borderRadius: "20px",
-                        }}
-                      >
-                        حفظ التعديلات
-                      </Button>
-                    </Box>
-                  </Box>
-                </Box>
-              </Box>
-            </CardContent>
-          </Card>
-        </Backdrop>
-      }
+              <Button variant="contained" color="primary" type="submit" fullWidth>
+                حفظ التعديلات
+              </Button>
+            </Box>
+          </CardContent>
+        </Card>
+      </Backdrop>
     </>
   );
 }
