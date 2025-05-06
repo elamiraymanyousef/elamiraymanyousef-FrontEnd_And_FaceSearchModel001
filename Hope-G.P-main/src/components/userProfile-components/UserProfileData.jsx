@@ -320,7 +320,7 @@ function UserProfileData() {
                     }}
                   >
                     {" "}
-                    {profileData.governmentName}{" "}
+                    {profileData.government.nameAr}{" "}
                   </Typography>
                   <Typography>
                     <img src={CaretLeft} alt="CaretLeft" />
