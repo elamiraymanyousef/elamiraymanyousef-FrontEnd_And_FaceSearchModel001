@@ -16,7 +16,7 @@ import SuccessMsg from "./SuccessMsg";
 const cookies = Cookie();
 const token = cookies.get("Cookie");
 const userId = localStorage.getItem("userId");
-console.log(token);
+
 function UserProfileData() {
   const [openPopUp, setopenPopUp] = useState(false);
   const [UploadImg, setUpladImg] = useState(
@@ -24,7 +24,8 @@ function UserProfileData() {
       ? addphoto
       : localStorage.getItem("avater")
   );
-  const [profileData, setProfileData] = useState([]);
+  const [profileData, setProfileData] = useState({});
+  const [loading, setLoading] = useState(true);
   const [Image, setImage] = useState("");
   const [succesMsg, setsuccesMsg] = useState("");
   const [Err, setErr] = useState(false);
@@ -32,7 +33,9 @@ function UserProfileData() {
   useEffect(() => {
     getProfileDate();
   }, []);
+  
   const getProfileDate = () => {
+    setLoading(true);
     axios
       .get(`${GetProfile}${userId}`, {
         headers: {
@@ -41,9 +44,14 @@ function UserProfileData() {
       })
       .then((response) => {
         setProfileData(response.data.data);
-        console.log(response.data);
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.error("Error fetching profile data:", error);
+        setLoading(false);
       });
   };
+  
   const handleimge = (e) => {
     const reader = new FileReader();
 
@@ -57,7 +65,6 @@ function UserProfileData() {
   };
 
   const handlSendImg = (e) => {
-    console.log("object");
     setsuccesMsg("");
     try {
       let formData;
@@ -71,7 +78,6 @@ function UserProfileData() {
           },
         })
         .then((response) => {
-          console.log(response);
           if (response.data.isSuccess) {
             setErr(true);
             setsuccesMsg(response.data.message);
@@ -88,34 +94,32 @@ function UserProfileData() {
       setErr(false);
     }
   };
+  
   const popUp = () => {
     setopenPopUp(true);
   };
+  
   const profile = localStorage.getItem("avater");
+  
   return (
     <>
       {succesMsg !== "" && <SuccessMsg succesMsg={succesMsg} Err={Err} />}
       <Grid
-      
         container
         className="grid"
         sx={{position:"relative", background:{xs:"#fff",md:"#c1c1c147"}, padding: {xs:"0px 0px 0px 0",md:"50px 50px 50px 0",xl:"80px 50px 80px 0"} }}
       >
-        
         <Grid
           item
           xs={12}
           md={11}
-          
           sx={{
             background: "#FFF",
-
             height: {md:"120vh",xl:"calc(140vh - 0px)"},
             width: {md:"600px",xl:"1242px"},
             borderRadius: "35px",
             padding: {xs:"33px",md:"20px"},
             display: "grid",
-            
             gap: {xs:"120px",md:"40px"},
           }}
         >
@@ -154,9 +158,7 @@ function UserProfileData() {
                 component="form"
                 sx={{
                   width: "100%",
-
                   display: "flex",
-
                   justifyContent: "center",
                   alignItems: "center",
                   position: "relative",
@@ -169,7 +171,7 @@ function UserProfileData() {
                   sx={{
                     objectFit: "cover",
                     width: {xs:"120px",md:"150px",xl:"200px"},
-                    width: {xs:"120px",md:"150px",xl:"200px"},
+                    height: {xs:"120px",md:"150px",xl:"200px"},
                     borderRadius: "50%",
                     border: "10px solid #c1c1c147",
                   }}
@@ -207,290 +209,285 @@ function UserProfileData() {
             </Box>
           </Grid>
 
-          <Grid container spacing={{xs:4,md:3,xl:10}}>
-          <Grid item xs={12} md={8}>
-              <Paper
-                sx={{
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: {md:"0px",xl:"30px"},
-                  padding: {md:"0px",xl:"30px 20px"},
-                  border: "1px solid #C1C1C1",
-                  borderRadius: "25px",
-                  height:"fit-content",
-                }}
-              >
-                <Typography
+          {loading ? (
+            <Typography sx={{ textAlign: "center" }}>جاري تحميل البيانات...</Typography>
+          ) : (
+            <Grid container spacing={{xs:4,md:3,xl:10}}>
+              <Grid item xs={12} md={8}>
+                <Paper
                   sx={{
-                    padding: {xs:"20px 10px",md:"20px 10px",xl:"30px 20px"},
-                    fontWeight: "600",
-                    fontSize: {xs:"12",md:"17px"},
-                    color: "#2E74FD",
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: {md:"0px",xl:"30px"},
+                    padding: {md:"0px",xl:"30px 20px"},
+                    border: "1px solid #C1C1C1",
+                    borderRadius: "25px",
+                    height:"fit-content",
                   }}
                 >
-                  معلومات الحساب الأساسية
-                </Typography>
+                  <Typography
+                    sx={{
+                      padding: {xs:"20px 10px",md:"20px 10px",xl:"30px 20px"},
+                      fontWeight: "600",
+                      fontSize: {xs:"12",md:"17px"},
+                      color: "#2E74FD",
+                    }}
+                  >
+                    معلومات الحساب الأساسية
+                  </Typography>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      padding: {xs:"20px 10px",md:"20px 10px",xl:"30px 20px"},
+                    }}
+                  >
+                    <Typography
+                      sx={{
+                        fontWeight: "600",
+                        fontSize: {xs:"10px",md:"13px",xl:"17px"},
+                        color: "#373B55",
+                      }}
+                    >
+                      الاسم
+                    </Typography>
+                    <Typography
+                      sx={{
+                        fontWeight: "600",
+                        fontSize: {xs:"10px",md:"13px",xl:"17px"},
+                        color: "#373B55",
+                      }}
+                    >
+                      {profileData.lastName}
+                    </Typography>
+                    <Typography>
+                      <img src={CaretLeft} alt="CaretLeft" />
+                    </Typography>
+                  </Box>
+                  <Divider sx={{ background: "#C1C1C1", height: "2px" }} />
+                  <Box
+                    sx={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      padding: {xs:"20px 10px",md:"20px 10px",xl:"30px 20px"},
+                    }}
+                  >
+                    <Typography
+                      sx={{
+                        fontWeight: "600",
+                        fontSize: {xs:"10px",md:"13px",xl:"17px"},
+                        color: "#373B55",
+                      }}
+                    >
+                      إسم الدخول
+                    </Typography>
+                    <Typography
+                      sx={{
+                        fontWeight: "600",
+                        fontSize: {xs:"10px",md:"13px",xl:"17px"},
+                        color: "#373B55",
+                      }}
+                    >
+                      {profileData.firstName} 
+                      {/* {profileData.lastName} */}
+                    </Typography>
+                    <Typography>
+                      <img src={CaretLeft} alt="CaretLeft" />
+                    </Typography>
+                  </Box>
+                  <Divider sx={{ background: "#C1C1C1", height: "2px" }} />
+                  <Box
+                    sx={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      padding: {xs:"20px 10px",md:"20px 10px",xl:"30px 20px"},
+                    }}
+                  >
+                    <Typography
+                      sx={{
+                        fontWeight: "600",
+                        fontSize: {xs:"10px",md:"13px",xl:"17px"},
+                        color: "#373B55",
+                      }}
+                    >
+                      المحافظة
+                    </Typography>
+                    <Typography
+                      sx={{
+                        fontWeight: "600",
+                        fontSize: {md:"13px",xl:"17px"},
+                        color: "#373B55",
+                      }}
+                    >
+                      {profileData.government && profileData.government.nameAr}
+                    </Typography>
+                    <Typography>
+                      <img src={CaretLeft} alt="CaretLeft" />
+                    </Typography>
+                  </Box>
+                  <Divider sx={{ background: "#C1C1C1", height: "2px" }} />
+                  <Box
+                    sx={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      padding: {xs:"20px 10px",md:"20px 10px",xl:"30px 20px"},
+                    }}
+                  >
+                    <Typography
+                      sx={{
+                        fontWeight: "600",
+                        fontSize: {xs:"10px",md:"13px",xl:"17px"},
+                        color: "#373B55",
+                      }}
+                    >
+                      حسابك علي Hope
+                    </Typography>
+                    <Typography
+                      sx={{
+                        fontWeight: "600",
+                        fontSize: {xs:"10px",md:"13px",xl:"17px"},
+                        color: "#373B55",
+                      }}
+                    >
+                      {profileData.email}
+                    </Typography>
+                    <Typography>
+                      <img src={CaretLeft} alt="CaretLeft" />
+                    </Typography>
+                  </Box>
+                </Paper>
+              </Grid>
+              <Grid item xs={12} md={4} >
+                <Paper
+                  sx={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: {md:"15px",xl:"20px"},
+                    padding: {md:"20px 10px",xl:"30px 20px"},
+                    border: "1px solid #C1C1C1",
+                    borderRadius: "25px",
+                    height:"fit-content",
+                    justifyContent:"space-between",
+                  }}
+                >
+                  <Typography
+                    sx={{
+                      padding: {xs:"20px 10px",md:"20px 10px",xl:"30px 20px"},
+                      fontWeight: "600",
+                      fontSize: {xs:"12px",md:"17px"},
+                      color: "#2E74FD",
+                    }}
+                  >
+                    معلومات التواصل
+                  </Typography>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      padding: {xs:"20px 10px",md:"20px 10px",xl:"30px 20px"},
+                    }}
+                  >
+                    <Typography
+                      sx={{
+                        fontWeight: "600",
+                        fontSize: {xs:"10px",md:"13px",xl:"17px"},
+                        color: "#373B55",
+                      }}
+                    >
+                      الايميل
+                    </Typography>
+                    <Typography
+                      sx={{
+                        fontWeight: "600",
+                        fontSize: {xs:"10px",md:"13px",xl:"17px"},
+                        color: "#373B55",
+                      }}
+                    >
+                      {profileData.email}
+                    </Typography>
+                    <Typography>
+                      <img src={CaretLeft} alt="CaretLeft" />
+                    </Typography>
+                  </Box>
+                  <Divider sx={{ background: "#C1C1C1", height: "2px" }} />
+                  <Box
+                    sx={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      padding: {xs:"20px 10px",md:"20px 10px",xl:"30px 20px"},
+                    }}
+                  >
+                    <Typography
+                      sx={{
+                        fontWeight: "600",
+                        fontSize: {xs:"10px",md:"13px",xl:"17px"},
+                        color: "#373B55",
+                      }}
+                    >
+                      رقم الهاتف
+                    </Typography>
+                    <Typography
+                      sx={{
+                        fontWeight: "600",
+                        fontSize: {xs:"10px",md:"13px",xl:"17px"},
+                        color: "#373B55",
+                      }}
+                    >
+                      {profileData.phoneNumber}
+                    </Typography>
+                    <Typography>
+                      <img src={CaretLeft} alt="CaretLeft" />
+                    </Typography>
+                  </Box>
+                </Paper>
                 <Box
                   sx={{
                     display: "flex",
-                    justifyContent: "space-between",
+                    justifyContent: "center",
                     alignItems: "center",
-
-                    padding: {xs:"20px 10px",md:"20px 10px",xl:"30px 20px"},
                   }}
                 >
-                  <Typography
-                    sx={{
-                      fontWeight: "600",
-                      fontSize: {xs:"10px",md:"13px",xl:"17px"},
-                      color: "#373B55",
+                  <p
+                    style={{
+                      backgroundColor: "#2E74FD",
+                      color: "white",
+                      width: "60%",
+                      marginTop: "30px",
+                      height: "45px",
+                      fontWeight: "700",
+                      fontSize: "18px",
+                      borderRadius: "10px",
+                      textAlign: "center",
+                      lineHeight: "45px",
+                      cursor: "pointer",
                     }}
+                    onClick={popUp}
                   >
-                    الاسم
-                  </Typography>
-                  <Typography
-                    sx={{
-                      fontWeight: "600",
-                      fontSize: {xs:"10px",md:"13px",xl:"17px"},
-                      color: "#373B55",
-                    }}
-                  >
-                    {profileData.userName}{" "}
-                  </Typography>
-                  <Typography>
-                    <img src={CaretLeft} alt="CaretLeft" />
-                  </Typography>
+                    تعديل
+                  </p>
+                  {openPopUp && (
+                    <EditProgile
+                      getProfileDate={getProfileDate}
+                      openPopUp={openPopUp}
+                      setopenPopUp={setopenPopUp}
+                      ProfileData={profileData}
+                    />
+                  )}
                 </Box>
-                <Divider sx={{ background: "#C1C1C1", height: "2px" }} />
-                <Box
-                  sx={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    padding: {xs:"20px 10px",md:"20px 10px",xl:"30px 20px"},
-                  }}
-                >
-                  <Typography
-                    sx={{
-                      fontWeight: "600",
-                      fontSize: {xs:"10px",md:"13px",xl:"17px"},
-                      color: "#373B55",
-                    }}
-                  >
-                    إسم الدخول{" "}
-                  </Typography>
-                  <Typography
-                    sx={{
-                      fontWeight: "600",
-                      fontSize: {xs:"10px",md:"13px",xl:"17px"},
-                      color: "#373B55",
-                    }}
-                  >
-                    {" "}
-                    {profileData.firstName}{" "+profileData.lastName}
-                  </Typography>
-                  <Typography>
-                    <img src={CaretLeft} alt="CaretLeft" />
-                  </Typography>
-                </Box>
-                <Divider sx={{ background: "#C1C1C1", height: "2px" }} />
-                <Box
-                  sx={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-
-                    padding: {xs:"20px 10px",md:"20px 10px",xl:"30px 20px"},
-                  }}
-                >
-                  <Typography
-                    sx={{
-                      fontWeight: "600",
-                      fontSize: {xs:"10px",md:"13px",xl:"17px"},
-                      color: "#373B55",
-                    }}
-                  >
-                    المحافظة
-                  </Typography>
-                  <Typography
-                    sx={{
-                      fontWeight: "600",
-                      fontSize: {md:"13px",xl:"17px"},
-                      color: "#373B55",
-                    }}
-                  >
-                    {" "}
-                    {profileData.government.nameAr}{" "}
-                  </Typography>
-                  <Typography>
-                    <img src={CaretLeft} alt="CaretLeft" />
-                  </Typography>
-                </Box>
-                <Divider sx={{ background: "#C1C1C1", height: "2px" }} />
-                <Box
-                  sx={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-
-                    padding: {xs:"20px 10px",md:"20px 10px",xl:"30px 20px"},
-                  }}
-                >
-                  <Typography
-                    sx={{
-                      fontWeight: "600",
-                      fontSize: {xs:"10px",md:"13px",xl:"17px"},
-                      color: "#373B55",
-                    }}
-                  >
-                    حسابك علي Hope
-                  </Typography>
-                  <Typography
-                    sx={{
-                      fontWeight: "600",
-                      fontSize: {xs:"10px",md:"13px",xl:"17px"},
-                      color: "#373B55",
-                    }}
-                  >
-                    {profileData.email}
-                  </Typography>
-                  <Typography>
-                    <img src={CaretLeft} alt="CaretLeft" />
-                  </Typography>
-                </Box>
-              </Paper>
+              </Grid>
             </Grid>
-            <Grid item xs={12} md={4} >
-              <Paper
-                sx={{
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: {md:"15px",xl:"20px"},
-                  padding: {md:"20px 10px",xl:"30px 20px"},
-                  border: "1px solid #C1C1C1",
-                  borderRadius: "25px",
-                  height:"fit-content",
-                  justifyContent:"space-between",
-                }}
-              >
-                <Typography
-                  sx={{
-                    padding: {xs:"20px 10px",md:"20px 10px",xl:"30px 20px"},
-                    fontWeight: "600",
-                    fontSize: {xs:"12px",md:"17px"},
-                    color: "#2E74FD",
-                  }}
-                >
-                  معلومات التواصل{" "}
-                </Typography>
-                <Box
-                  sx={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-
-                    padding: {xs:"20px 10px",md:"20px 10px",xl:"30px 20px"},
-                  }}
-                >
-                  <Typography
-                    sx={{
-                      fontWeight: "600",
-                      fontSize: {xs:"10px",md:"13px",xl:"17px"},
-                      color: "#373B55",
-                    }}
-                  >
-                    الايميل
-                  </Typography>
-                  <Typography
-                    sx={{
-                      fontWeight: "600",
-                      fontSize: {xs:"10px",md:"13px",xl:"17px"},
-                      color: "#373B55",
-                    }}
-                  >
-                    {profileData.email}{" "}
-                  </Typography>
-                  <Typography>
-                    <img src={CaretLeft} alt="CaretLeft" />
-                  </Typography>
-                </Box>
-                <Divider sx={{ background: "#C1C1C1", height: "2px" }} />
-                <Box
-                  sx={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-
-                    padding: {xs:"20px 10px",md:"20px 10px",xl:"30px 20px"},
-                  }}
-                >
-                  <Typography
-                    sx={{
-                      fontWeight: "600",
-                      fontSize: {xs:"10px",md:"13px",xl:"17px"},
-                      color: "#373B55",
-                    }}
-                  >
-                    رقم الهاتف{" "} 
-                  </Typography>
-                  <Typography
-                    sx={{
-                      fontWeight: "600",
-                      fontSize: {xs:"10px",md:"13px",xl:"17px"},
-                      color: "#373B55",
-                    }}
-                  >
-                    {profileData.phoneNumber}{" "}
-                  </Typography>
-                  <Typography>
-                    <img src={CaretLeft} alt="CaretLeft" />
-                  </Typography>
-                </Box>
-              </Paper>
-              <Box
-                sx={{
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                }}
-              >
-                <p
-                  style={{
-                    backgroundColor: "#2E74FD",
-                    color: "white",
-                    width: "60%",
-                    marginTop: "30px",
-                    height: "45px",
-                    fontWeight: "700",
-                    fontSize: "18px",
-                    borderRadius: "10px",
-                    textAlign: "center",
-                    lineHeight: "45px",
-                    cursor: "pointer",
-                  }}
-                  onClick={popUp}
-                >
-                  تعديل
-                </p>
-                {openPopUp && (
-                  <EditProgile
-                    getProfileDate={getProfileDate}
-                    openPopUp={openPopUp}
-                    setopenPopUp={setopenPopUp}
-                    ProfileData={profileData}
-                  />
-                )}
-              </Box>
-            </Grid>
-           
-          </Grid>
+          )}
         </Grid>
         <Grid 
         sx={{position:{xs:"absolute",md:"static"},
         left:{xs:"5%",md:"inherit"},
-        top:{xs:"3%",md:"inherit",
-
-        }}}
+        top:{xs:"3%",md:"inherit"}}}
          item xs={2} md={1}>
           <Box sx={{ display: "grid"}}>
             <UserProfileNavigation getProfileDateEmail={profileData.email} />
