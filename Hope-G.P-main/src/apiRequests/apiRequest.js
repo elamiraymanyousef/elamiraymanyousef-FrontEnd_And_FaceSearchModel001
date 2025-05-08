@@ -74,8 +74,11 @@ export const GetPostOfLosties =
   "http://hopesystem.runasp.net/api/Reports/by-missing-state?missingState=0";
 export const HidePost =
   "https://hope3221-001-site1.btempurl.com/api/Posts/HidePost";
+// export const DeletePost =
+//   "https://hope3221-001-site1.btempurl.com/api/Admin/DeletePost";
 export const DeletePost =
-  "https://hope3221-001-site1.btempurl.com/api/Admin/DeletePost";
+  "http://hopesystem.runasp.net/api/Reports/";
+  
 export const DeleteComment =
   "https://hope3221-001-site1.btempurl.com/api/Posts/DeleteComment";
 export const AddCommentToComment =
@@ -83,9 +86,9 @@ export const AddCommentToComment =
 export const UpdateComment =
   "https://hope3221-001-site1.btempurl.com/api/Posts/UpdateComment";
 export const AddCommentToPost =
-  "https://hope3221-001-site1.btempurl.com/api/Posts/AddCommentToPost";
+  "http://hopesystem.runasp.net/api/Comments";
 export const GetCommentsByPostId =
-  "https://hope3221-001-site1.btempurl.com/api/Posts/GetCommentsByPostId";
+  "http://hopesystem.runasp.net/api/Comments/report/reportId";
 export const UpdatePostOfThingsPost =
   "https://hope3221-001-site1.btempurl.com/api/Posts/UpdatePostOfThingsPost";
 export const UpdatePostOfPeoplePost =
