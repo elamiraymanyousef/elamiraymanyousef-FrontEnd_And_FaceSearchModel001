@@ -35,7 +35,7 @@ function ChangePassword({popUpchangPass}) {
   const [msgSucc, setmsgsucc] = useState(false);
   const [checkChangePass, setcheckChangePass] = useState(false);
   const [Form, setForm] = useState({
-    userEmail: "",
+    email: "",
   });
   const handlChange = (e) => {
     setForm({ ...Form, [e.target.name]: e.target.value });
@@ -54,14 +54,15 @@ function ChangePassword({popUpchangPass}) {
         })
         .then((response) => {
           console.log(response);
-          if (response.data.isSuccess) {
+          if (response.data.succeeded) {
             setmsgsucc(true);
             setcheckChangePass(true);
+            handleClose();
           } else {
             setmsgsucc(false);
             setmsgErr(response.data.message);
           }
-          if (Form.userEmail == "") {
+          if (Form.email == "") {
             setmsgErr("ادخل الايميل");
           }
         });
@@ -88,7 +89,7 @@ function ChangePassword({popUpchangPass}) {
     <>
       {msgSucc ? (
         <CodeToVerifyEmail
-          userEmail={Form.userEmail}
+          email={Form.email}
           checkChangePass={checkChangePass}
         />
       ) : (
@@ -232,8 +233,8 @@ function ChangePassword({popUpchangPass}) {
                       </IconButton>
                     }
                     placeholder="أدخل حسابك"
-                    value={Form.userEmail}
-                    name="userEmail"
+                    value={Form.email}
+                    name="email"
                     onChange={handlChange}
                   />
                 </FormControl>

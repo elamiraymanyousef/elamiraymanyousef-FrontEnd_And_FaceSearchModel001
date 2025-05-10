@@ -51,9 +51,11 @@ const ForgetPassword = ({ userEmail }) => {
           },
         })
         .then((response) => {
-          console.log(response);
-          if (response.data.isSuccess) {
+          console.log("ttttttttt",response);
+
+          if (response.data.succeeded) {
             setmsgsucc(true);
+            handleClose();
           } else {
             setmsgsucc(false);
             setmsgErr(response.data.message);

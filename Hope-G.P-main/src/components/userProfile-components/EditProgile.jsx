@@ -14,12 +14,12 @@ import {
   MenuItem,
   OutlinedInput,
   InputAdornment,
-  IconButton,
+  IconButton
 } from "@mui/material";
 import axios from "axios";
 import Cookie from "cookie-universal";
 import SuccessMsg from "./SuccessMsg";
-import { getAllGovernments, UpdateUserData } from "../../apiRequests/apiRequest";
+import { getAllGovernments, resetPassword, UpdateUserData } from "../../apiRequests/apiRequest";
 
 const cookies = Cookie();
 const token = cookies.get("Cookie");
@@ -93,6 +93,53 @@ export default function EditProfile({
       }
     } catch (err) {
       setSuccessMsg("حدث خطأ أثناء تحديث البيانات");
+      setError(true);
+    }
+  };
+
+  const [passwordForm, setPasswordForm] = useState({
+    email: "",
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
+  
+  // Handle password form input change
+  const handlePasswordChange = (e) => {
+    setPasswordForm({ ...passwordForm, [e.target.name]: e.target.value });
+  };
+
+   // Reset password submission
+   const handleResetPassword = async (event) => {
+    event.preventDefault();
+    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+      setSuccessMsg("Passwords do not match.");
+      setError(true);
+      return;
+    }
+    
+    try {
+      const response = await axios.post(resetPassword, passwordForm, {
+        headers: {
+          Authorization: "Bearer " + token,
+          "Accept-Language": "ar-EG",
+        },
+      });
+
+      if (response.data.succeeded) {
+        setError(false);
+        setSuccessMsg("Password reset successfully.");
+        getProfileDate();
+        setTimeout(() => {
+          window.location.reload();
+
+        }, 1000);
+      } else {
+        setSuccessMsg(response.data.message);
+        setError(true);
+      }
+    } catch (err) {
+      setSuccessMsg("حدث خطأ أثناء تغيير كلمة المرور");
       setError(true);
     }
   };
@@ -202,6 +249,66 @@ export default function EditProfile({
                 حفظ التعديلات
               </Button>
             </Box>
+
+            <Divider sx={{ my: 2 }} />
+
+{/* Reset Password Section */}
+<Box component="form" onSubmit={handleResetPassword}>
+  <Typography variant="h6" color="primary" sx={{ mb: 2 }}>
+    تغيير كلمة المرور
+  </Typography>
+
+  <FormControl fullWidth sx={{ mb: 2 }}>
+    <TextField
+      name="email"
+      label="البريد الإلكتروني"
+      value={passwordForm.email}
+      onChange={handlePasswordChange}
+      fullWidth
+      required
+    />
+  </FormControl>
+
+  <FormControl fullWidth sx={{ mb: 2 }}>
+    <TextField
+      type="password"
+      name="currentPassword"
+      label="كلمة المرور الحالية"
+      value={passwordForm.currentPassword}
+      onChange={handlePasswordChange}
+      fullWidth
+      required
+    />
+  </FormControl>
+
+  <FormControl fullWidth sx={{ mb: 2 }}>
+    <TextField
+      type="password"
+      name="newPassword"
+      label="كلمة المرور الجديدة"
+      value={passwordForm.newPassword}
+      onChange={handlePasswordChange}
+      fullWidth
+      required
+    />
+  </FormControl>
+
+  <FormControl fullWidth sx={{ mb: 2 }}>
+    <TextField
+      type="password"
+      name="confirmPassword"
+      label="تأكيد كلمة المرور الجديدة"
+      value={passwordForm.confirmPassword}
+      onChange={handlePasswordChange}
+      fullWidth
+      required
+    />
+  </FormControl>
+
+  <Button variant="contained" color="secondary" type="submit" fullWidth>
+    حفظ كلمة المرور
+  </Button>
+</Box>
           </CardContent>
         </Card>
       </Backdrop>

@@ -7,13 +7,16 @@ export const SendEmail =
   "http://hopesystem.runasp.net/api/Account/confirm-email";
 
 export const ChangePasswordApi =
-  "https://hope3221-001-site1.btempurl.com/api/Account/SendCodeForChangePassword";
+  "http://hopesystem.runasp.net/api/Account/forgot-password";
 
 export const ConfirmationNum =
   "https://hope3221-001-site1.btempurl.com/api/Account/GetConfirmationNumber";
 
 export const forgetPassword =
   "https://hope3221-001-site1.btempurl.com/api/Account/ChangePassword";
+
+  export const resetPassword  =
+  "http://hopesystem.runasp.net/api/Account/reset-password";  
 
 export const AddPostPeople =
   "http://hopesystem.runasp.net/api/Reports";

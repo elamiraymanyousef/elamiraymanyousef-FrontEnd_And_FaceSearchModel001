@@ -1,4 +1,4 @@
-import { Box, Divider, Grid, Input, InputLabel, Paper, Typography } from "@mui/material";
+import { Box, Divider, Grid, Input, InputLabel, Paper, Typography ,FormControl,TextField ,Button} from "@mui/material";
 import UserProfileNavigation from "./UserProfileNavigation";
 import addphoto from "../../assets/user profile.png";
 import CaretLeft from "../../assets/profileUser/CaretLeft.png";
@@ -52,6 +52,8 @@ function UserProfileData() {
       });
   };
   
+  
+
   const handleimge = (e) => {
     const reader = new FileReader();
 
@@ -100,6 +102,9 @@ function UserProfileData() {
   };
   
   const profile = localStorage.getItem("avater");
+
+  
+ 
   
   return (
     <>
@@ -329,6 +334,11 @@ function UserProfileData() {
                     </Typography>
                   </Box>
                   <Divider sx={{ background: "#C1C1C1", height: "2px" }} />
+
+                 
+                 
+
+
                   <Box
                     sx={{
                       display: "flex",
@@ -469,7 +479,7 @@ function UserProfileData() {
                     }}
                     onClick={popUp}
                   >
-                    تعديل
+                    تعديل البيانات وكلمة السر
                   </p>
                   {openPopUp && (
                     <EditProgile
@@ -492,8 +502,11 @@ function UserProfileData() {
           <Box sx={{ display: "grid"}}>
             <UserProfileNavigation getProfileDateEmail={profileData.email} />
           </Box>
+
+          
         </Grid>
       </Grid>
+
     </>
   );
 }
